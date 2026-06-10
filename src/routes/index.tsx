@@ -290,16 +290,29 @@ function FutureProgress({ odd }: { odd: any }) {
   const progress = Array.isArray(odd.future_progress) ? odd.future_progress : [];
   const status = odd.future_status ?? "active";
   const latest = progress[progress.length - 1];
+  const completed = progress.filter((p: any) => p && p.round != null).length;
   const tone = status === "winner" ? "text-emerald-300" : ["lost", "disqualified", "settled"].includes(status) ? "text-destructive" : "text-primary";
+  const headline = status === "winner"
+    ? "CHAMPION"
+    : ["lost", "disqualified"].includes(status)
+      ? status.replace(/_/g, " ")
+      : odd.future_next_title || `Round ${completed + 1}`;
   return (
     <div className="mt-2 border-t border-border/40 pt-2">
-      <div className={`text-[10px] uppercase tracking-widest font-bold ${tone}`}>{status.replace(/_/g, " ")}</div>
+      <div className={`text-[10px] uppercase tracking-widest font-bold ${tone}`}>{headline}</div>
       <div className="mt-1 h-1.5 rounded-full bg-muted overflow-hidden">
-        <div className="h-full bg-gradient-gold" style={{ width: `${Math.min(100, Math.max(18, (progress.length + 1) * 22))}%` }} />
+        <div className="h-full bg-gradient-gold" style={{ width: `${Math.min(100, Math.max(18, (completed + 1) * 22))}%` }} />
       </div>
-      <div className="mt-1 text-[10px] text-muted-foreground truncate">
-        {odd.future_next_title ? `Next: ${odd.future_next_title}` : latest?.title ?? "Awaiting next round"}
-      </div>
+      {latest?.round != null ? (
+        <div className="mt-1 text-[10px] text-muted-foreground truncate">
+          Round {latest.round}{latest.score ? ` · ${latest.score}` : ""}
+          {latest.opponent ? ` · ${["lost", "disqualified"].includes(latest.status) ? "lost to" : "beat"} ${latest.opponent}` : ""}
+        </div>
+      ) : (
+        <div className="mt-1 text-[10px] text-muted-foreground truncate">
+          {odd.future_next_title ? `Next: ${odd.future_next_title}` : "Awaiting next round"}
+        </div>
+      )}
     </div>
   );
 }
