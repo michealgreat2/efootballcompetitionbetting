@@ -358,21 +358,43 @@ function FutureTicketProgress({ odd }: { odd: any }) {
   const progress = Array.isArray(odd?.future_progress) ? odd.future_progress : [];
   const status = odd?.future_status ?? "active";
   const steps = progress.length ? progress : [{ status, title: odd?.future_next_title || "Tournament active", at: odd?.future_next_at }];
+  const headline = ["winner", "lost", "disqualified", "settled"].includes(status)
+    ? status
+    : odd?.future_next_title || "In progress";
   return (
     <div className="mt-3 rounded-xl border border-emerald-400/20 bg-emerald-500/5 p-3">
       <div className="flex items-center justify-between gap-2 text-[10px] uppercase tracking-widest text-muted-foreground">
-        <span>Progress tree</span>
-        <span className="text-primary font-bold">{status}</span>
+        <span>Progress · par rounds</span>
+        <span className="text-primary font-bold">{headline}</span>
       </div>
       <div className="mt-2 flex items-center gap-1.5 overflow-x-auto pb-1">
-        {steps.map((step: any, i: number) => (
-          <div key={`${step.status}-${i}`} className="flex items-center gap-1.5 shrink-0">
-            <div className="rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-[10px] font-bold text-primary whitespace-nowrap">
-              {step.title || step.status}{step.at ? ` · ${new Date(step.at).toLocaleDateString()}` : ""}
+        {steps.map((step: any, i: number) => {
+          const win = step.status === "qualified" || step.status === "winner";
+          const lose = ["lost", "disqualified"].includes(step.status);
+          const tone = win
+            ? "border-emerald-400/50 bg-emerald-500/10 text-emerald-200"
+            : lose
+              ? "border-destructive/50 bg-destructive/10 text-destructive"
+              : "border-primary/40 bg-primary/10 text-primary";
+          const verb = step.status === "winner"
+            ? "Champion"
+            : win
+              ? (step.opponent ? `beat ${step.opponent}` : "qualified")
+              : lose
+                ? (step.opponent ? `lost to ${step.opponent}` : step.status)
+                : "active";
+          return (
+            <div key={`${step.status}-${i}`} className="flex items-center gap-1.5 shrink-0">
+              <div className={`rounded-lg border px-2.5 py-1 text-[10px] font-bold whitespace-nowrap ${tone}`}>
+                <div>{step.round ? `Round ${step.round}` : step.title || step.status}</div>
+                {(step.score || step.opponent) && (
+                  <div className="font-normal opacity-90">{step.score ? `${step.score} · ` : ""}{verb}</div>
+                )}
+              </div>
+              {i < steps.length - 1 && <div className="h-px w-6 bg-primary/40" />}
             </div>
-            {i < steps.length - 1 && <div className="h-px w-6 bg-primary/40" />}
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
