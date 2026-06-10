@@ -8,7 +8,6 @@ interface Row {
   total_won: number;
   total_staked: number;
   total_funded: number;
-  bet_count: number;
   score: number;
   full_name: string | null;
   ingame_name: string | null;
@@ -16,7 +15,7 @@ interface Row {
 }
 
 /**
- * Top Bets — leaderboard of users ranked by combined score (won + staked).
+ * Top Bets — leaderboard of users ranked by total points from won, staked and funded tokens.
  * Scrollable; live-refreshes when bets change.
  */
 export function TopBetsPanel() {
@@ -27,25 +26,23 @@ export function TopBetsPanel() {
     const { data } = await supabase
       .from("bets")
       .select("user_id, stake, potential_payout, cashout_amount, status");
-    const totals = new Map<string, { won: number; staked: number; funded: number; bets: number }>();
+    const totals = new Map<string, { won: number; staked: number; funded: number }>();
     (data ?? []).forEach((b: any) => {
-      const cur = totals.get(b.user_id) ?? { won: 0, staked: 0, funded: 0, bets: 0 };
+      const cur = totals.get(b.user_id) ?? { won: 0, staked: 0, funded: 0 };
       cur.staked += Number(b.stake ?? 0);
-      cur.bets += 1;
       if (b.status === "won" || b.status === "cashed_out") {
         cur.won += Number(b.cashout_amount ?? b.potential_payout ?? 0);
       }
       totals.set(b.user_id, cur);
     });
-    // Funding: approved token requests count toward a user's total points.
-    const { data: funds } = await supabase
+    const { data: funded } = await supabase
       .from("token_requests")
       .select("user_id, amount, status")
       .eq("status", "approved");
-    (funds ?? []).forEach((f: any) => {
-      const cur = totals.get(f.user_id) ?? { won: 0, staked: 0, funded: 0, bets: 0 };
-      cur.funded += Number(f.amount ?? 0);
-      totals.set(f.user_id, cur);
+    (funded ?? []).forEach((r: any) => {
+      const cur = totals.get(r.user_id) ?? { won: 0, staked: 0, funded: 0 };
+      cur.funded += Number(r.amount ?? 0);
+      totals.set(r.user_id, cur);
     });
     const ids = Array.from(totals.keys());
     if (ids.length === 0) { setRows([]); setLoading(false); return; }
@@ -62,7 +59,6 @@ export function TopBetsPanel() {
           total_won: t.won,
           total_staked: t.staked,
           total_funded: t.funded,
-          bet_count: t.bets,
           score: t.won + t.staked + t.funded,
           full_name: pmap.get(id)?.full_name ?? null,
           ingame_name: pmap.get(id)?.ingame_name ?? null,
@@ -81,7 +77,6 @@ export function TopBetsPanel() {
     const ch = supabase
       .channel("admin-top-bets")
       .on("postgres_changes", { event: "*", schema: "public", table: "bets" }, load)
-      .on("postgres_changes", { event: "*", schema: "public", table: "token_requests" }, load)
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, []);
@@ -91,7 +86,7 @@ export function TopBetsPanel() {
       <div className="px-3 py-2 border-b border-primary/20 flex items-center gap-2 bg-gradient-to-r from-primary/15 to-transparent">
         <Flame className="h-4 w-4 text-primary" />
         <div className="text-[11px] font-bold tracking-[0.25em] text-primary">TOP BETS</div>
-        <div className="ml-auto text-[9px] uppercase tracking-widest text-muted-foreground">Bets + Staked + Funded</div>
+        <div className="ml-auto text-[9px] uppercase tracking-widest text-muted-foreground">Won + Staked + Funded</div>
       </div>
       <div className="max-h-[360px] overflow-y-auto">
         {loading && <div className="p-3 text-xs text-muted-foreground">Loading…</div>}
