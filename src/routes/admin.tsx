@@ -1343,6 +1343,7 @@ function ShooterSelect({ label, value, players, onChange }: { label: string; val
 }
 
 function FuturesAdminPanel() {
+  const confirm = useConfirm();
   const [settings, setSettings] = useState({ futures_section_title: "TOURNAMENT FUTURES", futures_min_stake: 1, futures_max_payout: 100000000, futures_max_selections: 1 });
   const [futures, setFutures] = useState<any[]>([]);
   const [teams, setTeams] = useState<any[]>([]);
