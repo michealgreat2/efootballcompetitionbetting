@@ -85,6 +85,7 @@ function GangsTab() {
 }
 
 function TeamsTab() {
+  const confirm = useConfirm();
   const [teams, setTeams] = useState<Team[]>([]);
   const [edit, setEdit] = useState<Partial<Team> | null>(null);
   async function load() {
@@ -104,7 +105,7 @@ function TeamsTab() {
     setEdit(null); toast.success("Saved"); load();
   }
   async function remove(id: string) {
-    if (!confirm("Delete this team?")) return;
+    if (!await confirm({ title: "Delete this team?", description: "The team / gang entry will be removed. Matches that already used it keep their stored team info.", tone: "danger", confirmText: "Delete team" })) return;
     const { error } = await supabase.from("teams").delete().eq("id", id);
     if (error) return toast.error(error.message);
     toast.success("Deleted"); load();
