@@ -159,6 +159,7 @@ function TeamsTab() {
 }
 
 function PlayersTab() {
+  const confirm = useConfirm();
   const [players, setPlayers] = useState<Player[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
   const [edit, setEdit] = useState<Partial<Player> | null>(null);
