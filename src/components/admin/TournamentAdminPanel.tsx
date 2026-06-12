@@ -49,6 +49,7 @@ export function TournamentAdminPanel() {
   const [eventDate, setEventDate] = useState("");
   const [pName, setPName] = useState("");
   const [pLogo, setPLogo] = useState("");
+  const [pLogoBusy, setPLogoBusy] = useState(false);
 
   // result dialog
   const [resultMatch, setResultMatch] = useState<TMatch | null>(null);
