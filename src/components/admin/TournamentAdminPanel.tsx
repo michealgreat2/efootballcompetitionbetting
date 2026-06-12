@@ -105,6 +105,16 @@ export function TournamentAdminPanel() {
     loadDetail(sel.id);
   }
 
+  // Reorder participants — the order IS the bracket seeding/placement used when generating.
+  async function moveParticipant(index: number, dir: -1 | 1) {
+    const other = index + dir;
+    if (!sel || other < 0 || other >= participants.length) return;
+    const arr = [...participants];
+    [arr[index], arr[other]] = [arr[other], arr[index]];
+    setParticipants(arr.map((p, i) => ({ ...p, seed: i + 1 })));
+    await Promise.all(arr.map((p, i) => (supabase as any).from("tournament_participants").update({ seed: i + 1 }).eq("id", p.id)));
+  }
+
   async function generateBracket() {
     if (!sel) return;
     if (participants.length < 2) { toast.error("Add at least 2 participants"); return; }
