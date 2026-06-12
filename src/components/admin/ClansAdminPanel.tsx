@@ -176,7 +176,7 @@ function TeamsTab() {
             <DialogHeader><DialogTitle>{edit.id ? "Edit team" : "New team"}</DialogTitle></DialogHeader>
             <div className="space-y-2">
               <Input placeholder="Team name" value={edit.name ?? ""} onChange={(e) => setEdit({ ...edit, name: e.target.value })} />
-              <Input placeholder="Logo URL (optional)" value={edit.logo_url ?? ""} onChange={(e) => setEdit({ ...edit, logo_url: e.target.value })} />
+              <ImageUploadField label="Team logo (upload from device — optional)" bucket="team-logos" prefix="team" rounded="md" value={edit.logo_url} onChange={(url) => setEdit({ ...edit, logo_url: url })} />
               <Select value={(edit.gang_type as any) ?? "none"} onValueChange={(v) => setEdit({ ...edit, gang_type: v === "none" ? null : (v as any) })}>
                 <SelectTrigger><SelectValue placeholder="Type" /></SelectTrigger>
                 <SelectContent>
