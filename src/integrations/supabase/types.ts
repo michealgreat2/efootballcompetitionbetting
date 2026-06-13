@@ -2052,10 +2052,12 @@ export type Database = {
           created_at: string
           id: string
           label: string | null
+          match_id: string | null
           next_match_id: string | null
           next_slot: string | null
           participant_a_id: string | null
           participant_b_id: string | null
+          result_label: string | null
           round: number
           round_name: string | null
           scheduled_at: string | null
@@ -2071,10 +2073,12 @@ export type Database = {
           created_at?: string
           id?: string
           label?: string | null
+          match_id?: string | null
           next_match_id?: string | null
           next_slot?: string | null
           participant_a_id?: string | null
           participant_b_id?: string | null
+          result_label?: string | null
           round: number
           round_name?: string | null
           scheduled_at?: string | null
@@ -2090,10 +2094,12 @@ export type Database = {
           created_at?: string
           id?: string
           label?: string | null
+          match_id?: string | null
           next_match_id?: string | null
           next_slot?: string | null
           participant_a_id?: string | null
           participant_b_id?: string | null
+          result_label?: string | null
           round?: number
           round_name?: string | null
           scheduled_at?: string | null
@@ -2106,6 +2112,20 @@ export type Database = {
           winner_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "tournament_matches_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tournament_matches_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "public_real_matches"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "tournament_matches_next_match_id_fkey"
             columns: ["next_match_id"]
@@ -2149,6 +2169,7 @@ export type Database = {
           current_round: number
           eliminated_round: number | null
           id: string
+          is_disqualified: boolean
           is_eliminated: boolean
           logo_url: string | null
           name: string
@@ -2160,6 +2181,7 @@ export type Database = {
           current_round?: number
           eliminated_round?: number | null
           id?: string
+          is_disqualified?: boolean
           is_eliminated?: boolean
           logo_url?: string | null
           name: string
@@ -2171,6 +2193,7 @@ export type Database = {
           current_round?: number
           eliminated_round?: number | null
           id?: string
+          is_disqualified?: boolean
           is_eliminated?: boolean
           logo_url?: string | null
           name?: string
@@ -3046,15 +3069,27 @@ export type Database = {
         Returns: undefined
       }
       server_now: { Args: never; Returns: string }
-      set_tournament_result: {
-        Args: {
-          _match_id: string
-          _score_a: number
-          _score_b: number
-          _winner_id: string
-        }
-        Returns: Json
-      }
+      set_tournament_result:
+        | {
+            Args: {
+              _match_id: string
+              _score_a: number
+              _score_b: number
+              _winner_id: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              _dq_id?: string
+              _match_id: string
+              _outcome?: string
+              _score_a: number
+              _score_b: number
+              _winner_id: string
+            }
+            Returns: Json
+          }
       settle_pay_winning_bet: { Args: { _bet_id: string }; Returns: Json }
       user_cashout_bet: { Args: { _bet_id: string }; Returns: Json }
       verify_xp_consistency: { Args: { _user_id?: string }; Returns: Json }
