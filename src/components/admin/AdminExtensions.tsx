@@ -163,7 +163,7 @@ export function RiskPanel() {
     const [{ data: rs }, { data: ex }, { data: ap }] = await Promise.all([
       supabase.rpc("admin_risk_summary"),
       supabase.rpc("admin_exposure_per_match"),
-      supabase.from("app_settings").select("exposure_warn_pct, house_low_balance").eq("id", 1).maybeSingle(),
+      supabase.from("app_settings_private").select("exposure_warn_pct, house_low_balance").eq("id", 1).maybeSingle(),
     ]);
     setS(rs);
     setExposure((ex as any) ?? []);
