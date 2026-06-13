@@ -16,7 +16,7 @@ import { Switch } from "@/components/ui/switch";
 import {
   Shield, Users, Trophy, Coins, Megaphone, Settings as SettingsIcon, Ticket, AlertTriangle,
   Calendar, Tag, Image as ImageIcon, BarChart3, History, Send, Plus, Trash2, Pencil, ChevronRight, ChevronLeft, Wallet, ListOrdered, Sparkles, ClipboardList, Lock, Pause, Play, Check, X, MessageSquare, Eye, RotateCw, Copy, Globe, MapPin, Smartphone, Clock, Filter,
-  Dice5, LogOut, Crosshair, Target, Flame,
+  Dice5, LogOut, Crosshair, Target, Flame, ThumbsUp, ThumbsDown,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import lslLogo from "@/assets/lsl-logo.png";
@@ -31,7 +31,7 @@ const tileVirtualAsset = { url: tileVirtual };
 const tileChallengesAsset = { url: tileChallenges };
 const tileUsersAsset = { url: tileUsers };
 const tileClansAsset = { url: tileClans };
-import consoleHeaderBgAsset from "@/assets/console-header-bg.jpg.asset.json";
+import adminConsoleSeed from "@/assets/admin-console-seed.jpg";
 import leagueSkullFire from "@/assets/league-skull-fire.jpg";
 import { Countdown } from "@/components/Countdown";
 import { useAuth, ROLE_LABELS, type AppRole } from "@/contexts/AuthContext";
@@ -116,7 +116,7 @@ function AdminPage() {
 
           <div
             className="relative overflow-hidden rounded-2xl p-4 border border-primary/40 shadow-luxury bg-card"
-            style={{ backgroundImage: `linear-gradient(90deg, rgba(8,14,10,0.95) 0%, rgba(8,14,10,0.78) 45%, rgba(8,14,10,0.25) 100%), url(${consoleHeaderBgAsset.url})`, backgroundSize: "cover", backgroundPosition: "center right" }}
+            style={{ backgroundImage: `linear-gradient(90deg, rgba(8,14,10,0.94) 0%, rgba(8,14,10,0.72) 42%, rgba(8,14,10,0.18) 100%), url(${adminConsoleSeed})`, backgroundSize: "cover", backgroundPosition: "center right" }}
           >
             <div className="absolute inset-x-0 top-0 h-1 bg-gradient-gold" />
             <div className="relative flex items-center gap-3 flex-wrap">
@@ -2258,6 +2258,10 @@ function HighlightsPanel() {
           <Card key={h.id} className="glass p-2">
             {h.media_type === "video" ? <video src={h.media_url} className="w-full h-32 object-cover rounded" controls /> : <img src={h.media_url} className="w-full h-32 object-cover rounded" alt="" />}
             <div className="font-bold text-sm mt-1 truncate">{h.title}</div>
+            <div className="flex items-center gap-3 mt-1 text-xs">
+              <span className="flex items-center gap-1 text-emerald-300"><ThumbsUp className="h-3.5 w-3.5" />{h.likes ?? 0}</span>
+              <span className="flex items-center gap-1 text-destructive"><ThumbsDown className="h-3.5 w-3.5" />{h.dislikes ?? 0}</span>
+            </div>
             <div className="flex gap-1 mt-1">
               <Button size="sm" variant="outline" onClick={() => toggle(h.id, !h.is_active)}>{h.is_active ? "Hide" : "Show"}</Button>
               <Button size="sm" variant="destructive" onClick={() => del(h.id)}><Trash2 className="h-3 w-3" /></Button>
