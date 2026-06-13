@@ -14,11 +14,16 @@ const ALLOWED_MODELS = new Set([
 ]);
 
 const SYSTEM_PROMPT = `You are the LSL Admin AI Copilot — a trusted super-admin assistant for the Lomita Shooters League betting platform.
-You have full administrative tools: search/inspect users, credit or debit tokens, ban/unban, mute/unmute, kick, grant/revoke roles, adjust XP, refund bets, broadcast notifications, and read platform health (P&L, risk, pending queues).
+You have full administrative tools:
+- Users: search/inspect users, credit or debit tokens, ban/unban, mute/unmute, kick, grant/revoke roles, adjust XP, award achievements, notify a single user.
+- Bets: list a user's bets, refund, void, suspend, unsuspend, or delete bets.
+- Requests: list pending token top-ups and withdrawals, approve/deny token requests (approval credits tokens) and withdrawals, review virtual payout requests.
+- Platform: read platform health (P&L, risk, pending queues), per-match risk exposure, broadcast notifications, start/stop the virtual match cycle, clear the leaderboard, and read recent audit logs.
 
 Rules:
-- Always identify the exact target user with search_users or get_user before performing a destructive or balance-changing action. Never guess a user_id.
+- Always identify the exact target user with search_users or get_user before performing a destructive or balance-changing action. Never guess a user_id. Use list_user_bets to find a bet_id before any bet action, and list_pending_requests to find a request_id.
 - For token/XP/ban/mute/role/refund actions, only act when the admin's intent is clear. If ambiguous, ask a clarifying question instead of acting.
+- For destructive actions (delete bet, clear leaderboard), confirm the admin's intent before executing unless they were already explicit.
 - Always include a clear human reason for moderation and token actions.
 - After taking actions, briefly confirm what you did with concrete numbers (e.g. new balance).
 - Be concise and professional. Format with short markdown when helpful.`;
@@ -111,6 +116,126 @@ const TOOLS = [
       name: "platform_health",
       description: "Get a platform health snapshot: user count, total circulating tokens, P&L and risk summaries, pending withdrawals and token requests.",
       parameters: { type: "object", properties: { days: { type: "number", description: "Window for P&L, default 30" } } },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "list_user_bets",
+      description: "List a user's most recent bets (id, stake, status, potential payout, created date). Use this to find a bet_id before refunding, voiding, suspending or deleting a bet.",
+      parameters: { type: "object", properties: { user_id: { type: "string" }, limit: { type: "number", description: "Max bets, default 10" }, status: { type: "string", description: "Optional filter e.g. 'pending', 'won', 'lost'" } }, required: ["user_id"] },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "void_bet",
+      description: "Void a bet by id. Optionally refund the stake to the user.",
+      parameters: { type: "object", properties: { bet_id: { type: "string" }, refund: { type: "boolean", description: "Return the stake to the user, default false" }, reason: { type: "string" } }, required: ["bet_id"] },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "suspend_bet",
+      description: "Suspend (freeze) a bet so it cannot settle until unsuspended.",
+      parameters: { type: "object", properties: { bet_id: { type: "string" }, reason: { type: "string" } }, required: ["bet_id"] },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "unsuspend_bet",
+      description: "Remove the suspension from a bet.",
+      parameters: { type: "object", properties: { bet_id: { type: "string" } }, required: ["bet_id"] },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "delete_bet",
+      description: "Permanently delete a bet by id. Optionally refund the stake first. Destructive — confirm intent.",
+      parameters: { type: "object", properties: { bet_id: { type: "string" }, refund: { type: "boolean", description: "Return the stake to the user before deleting, default false" }, reason: { type: "string" } }, required: ["bet_id"] },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "award_achievement",
+      description: "Grant an achievement/badge to a user.",
+      parameters: { type: "object", properties: { user_id: { type: "string" }, code: { type: "string", description: "Unique achievement code/slug" }, title: { type: "string" }, description: { type: "string" }, icon: { type: "string", description: "Optional emoji or icon name" } }, required: ["user_id", "code", "title"] },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "notify_user",
+      description: "Send a direct notification to a single user.",
+      parameters: { type: "object", properties: { user_id: { type: "string" }, title: { type: "string" }, body: { type: "string" }, link: { type: "string" } }, required: ["user_id", "title", "body"] },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "list_pending_requests",
+      description: "List pending token top-up requests and withdrawal requests awaiting admin review.",
+      parameters: { type: "object", properties: { kind: { type: "string", enum: ["tokens", "withdrawals", "both"], description: "Default 'both'" }, limit: { type: "number", description: "Max per kind, default 10" } } },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "review_token_request",
+      description: "Approve or deny a pending token top-up request by its id. Approving credits the requested tokens to the user.",
+      parameters: { type: "object", properties: { request_id: { type: "string" }, approve: { type: "boolean" }, reason: { type: "string" } }, required: ["request_id", "approve"] },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "review_withdrawal",
+      description: "Approve or deny a pending withdrawal request by its id.",
+      parameters: { type: "object", properties: { request_id: { type: "string" }, approve: { type: "boolean" }, reason: { type: "string" } }, required: ["request_id", "approve"] },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "match_exposure",
+      description: "Get the house's open risk exposure per match (potential payout liability). Useful to spot dangerous matches.",
+      parameters: { type: "object", properties: {} },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "set_virtual_cycle",
+      description: "Start or stop the virtual matches cycle/engine.",
+      parameters: { type: "object", properties: { running: { type: "boolean" } }, required: ["running"] },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "review_virtual_payout",
+      description: "Approve or deny a virtual match payout request by its id.",
+      parameters: { type: "object", properties: { request_id: { type: "string" }, approve: { type: "boolean" }, reason: { type: "string" } }, required: ["request_id", "approve"] },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "clear_leaderboard",
+      description: "Wipe/reset all leaderboard overrides. Destructive — confirm intent.",
+      parameters: { type: "object", properties: {} },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "recent_audit_logs",
+      description: "Read the most recent admin audit log entries (who did what, when).",
+      parameters: { type: "object", properties: { limit: { type: "number", description: "Default 15, max 50" }, action: { type: "string", description: "Optional action filter substring" } } },
     },
   },
 ] as const;
@@ -217,6 +342,125 @@ export const adminAiChat = createServerFn({ method: "POST" })
         ]);
         const circulating = (balances ?? []).reduce((a: number, x: any) => a + Number(x.token_balance ?? 0), 0);
         return { user_count: userCount ?? 0, circulating_tokens: circulating, pnl, risk, pending_withdrawals: pendW ?? 0, pending_token_requests: pendT ?? 0 };
+      },
+      async list_user_bets({ user_id, limit, status }) {
+        let q = supabase
+          .from("bets")
+          .select("id, stake, status, potential_payout, created_at")
+          .eq("user_id", user_id)
+          .order("created_at", { ascending: false })
+          .limit(Math.min(Math.max(Math.trunc(Number(limit ?? 10)), 1), 50));
+        if (status) q = q.eq("status", String(status));
+        const { data, error } = await q;
+        if (error) throw new Error(error.message);
+        return { count: data?.length ?? 0, bets: data ?? [] };
+      },
+      async void_bet({ bet_id, refund, reason }) {
+        const { error } = await supabase.rpc("admin_void_bet", { _bet_id: bet_id, _refund: !!refund, _reason: reason ?? null });
+        if (error) throw new Error(error.message);
+        return { bet_id, voided: true, refunded: !!refund };
+      },
+      async suspend_bet({ bet_id, reason }) {
+        const { error } = await supabase.rpc("admin_suspend_bet", { _bet_id: bet_id, _reason: reason ?? null });
+        if (error) throw new Error(error.message);
+        return { bet_id, suspended: true };
+      },
+      async unsuspend_bet({ bet_id }) {
+        const { error } = await supabase.rpc("admin_unsuspend_bet", { _bet_id: bet_id });
+        if (error) throw new Error(error.message);
+        return { bet_id, suspended: false };
+      },
+      async delete_bet({ bet_id, refund, reason }) {
+        const { error } = await supabase.rpc("admin_delete_bet", { _bet_id: bet_id, _refund: !!refund, _reason: reason ?? null });
+        if (error) throw new Error(error.message);
+        return { bet_id, deleted: true, refunded: !!refund };
+      },
+      async award_achievement({ user_id, code, title, description, icon }) {
+        const { error } = await supabase.rpc("admin_award_achievement", { _user_id: user_id, _code: code, _title: title, _description: description ?? null, _icon: icon ?? null });
+        if (error) throw new Error(error.message);
+        return { user_id, code, awarded: true };
+      },
+      async notify_user({ user_id, title, body, link }) {
+        const { error } = await supabase.from("notifications").insert({ user_id, title, body, link: link ?? null });
+        if (error) throw new Error(error.message);
+        return { user_id, sent: true };
+      },
+      async list_pending_requests({ kind, limit }) {
+        const k = kind ?? "both";
+        const lim = Math.min(Math.max(Math.trunc(Number(limit ?? 10)), 1), 50);
+        const out: any = {};
+        if (k === "tokens" || k === "both") {
+          const { data, error } = await supabase.from("token_requests").select("id, user_id, amount, note, status, created_at").eq("status", "pending").order("created_at", { ascending: false }).limit(lim);
+          if (error) throw new Error(error.message);
+          out.token_requests = data ?? [];
+        }
+        if (k === "withdrawals" || k === "both") {
+          const { data, error } = await supabase.from("withdrawal_requests").select("id, user_id, ingame_name, gang_name, amount, ticket_ref, status, created_at").eq("status", "pending").order("created_at", { ascending: false }).limit(lim);
+          if (error) throw new Error(error.message);
+          out.withdrawal_requests = data ?? [];
+        }
+        return out;
+      },
+      async review_token_request({ request_id, approve, reason }) {
+        const { data: r, error: e0 } = await supabase.from("token_requests").select("*").eq("id", request_id).maybeSingle();
+        if (e0) throw new Error(e0.message);
+        if (!r) throw new Error("Token request not found");
+        if (r.status !== "pending") throw new Error(`Request already ${r.status}`);
+        if (approve) {
+          const { data: p, error: e1 } = await supabase.from("profiles").select("token_balance").eq("id", r.user_id).maybeSingle();
+          if (e1) throw new Error(e1.message);
+          if (!p) throw new Error("User not found");
+          const newBal = Number(p.token_balance ?? 0) + Number(r.amount);
+          const { error: e2 } = await supabase.from("profiles").update({ token_balance: newBal }).eq("id", r.user_id);
+          if (e2) throw new Error(e2.message);
+          await supabase.from("token_requests").update({ status: "approved", reviewed_at: new Date().toISOString() }).eq("id", request_id);
+          await supabase.from("notifications").insert({ user_id: r.user_id, title: "Tokens credited", body: `${Number(r.amount).toLocaleString()} tokens added to your account.` });
+          await supabase.rpc("admin_log_action", { _action: "token_request_approved", _target_type: "token_request", _target_id: request_id, _metadata: { amount: r.amount, balance_to: newBal, source: "admin_ai" } });
+          return { request_id, approved: true, amount: r.amount, new_balance: newBal };
+        }
+        await supabase.from("token_requests").update({ status: "denied", review_note: reason ?? null, reviewed_at: new Date().toISOString() }).eq("id", request_id);
+        await supabase.from("notifications").insert({ user_id: r.user_id, title: "Token request denied", body: `Reason: ${reason ?? "—"}` });
+        await supabase.rpc("admin_log_action", { _action: "token_request_denied", _target_type: "token_request", _target_id: request_id, _metadata: { reason, source: "admin_ai" } });
+        return { request_id, approved: false };
+      },
+      async review_withdrawal({ request_id, approve, reason }) {
+        const { data: r, error: e0 } = await supabase.from("withdrawal_requests").select("*").eq("id", request_id).maybeSingle();
+        if (e0) throw new Error(e0.message);
+        if (!r) throw new Error("Withdrawal request not found");
+        if (r.status !== "pending") throw new Error(`Request already ${r.status}`);
+        const status = approve ? "approved" : "denied";
+        const { error } = await supabase.from("withdrawal_requests").update({ status, admin_note: reason ?? null, reviewed_by: userId, reviewed_at: new Date().toISOString() }).eq("id", request_id);
+        if (error) throw new Error(error.message);
+        await supabase.from("notifications").insert({ user_id: r.user_id, title: approve ? "Withdrawal approved" : "Withdrawal denied", body: approve ? `Your withdrawal of ${Number(r.amount).toLocaleString()} is approved.` : `Reason: ${reason ?? "—"}` });
+        await supabase.rpc("admin_log_action", { _action: approve ? "withdrawal_approved" : "withdrawal_denied", _target_type: "withdrawal_request", _target_id: request_id, _metadata: { amount: r.amount, reason, source: "admin_ai" } });
+        return { request_id, approved: !!approve };
+      },
+      async match_exposure() {
+        const { data, error } = await supabase.rpc("admin_exposure_per_match");
+        if (error) throw new Error(error.message);
+        return { matches: data ?? [] };
+      },
+      async set_virtual_cycle({ running }) {
+        const { error } = await supabase.rpc("admin_set_virtual_cycle" as any, { _running: !!running });
+        if (error) throw new Error(error.message);
+        return { running: !!running };
+      },
+      async review_virtual_payout({ request_id, approve, reason }) {
+        const { error } = await supabase.rpc("admin_review_virtual_payout" as any, { _id: request_id, _approve: !!approve, _reason: approve ? null : (reason ?? null) });
+        if (error) throw new Error(error.message);
+        return { request_id, approved: !!approve };
+      },
+      async clear_leaderboard() {
+        const { error } = await supabase.rpc("admin_clear_leaderboard");
+        if (error) throw new Error(error.message);
+        return { cleared: true };
+      },
+      async recent_audit_logs({ limit, action }) {
+        let q = supabase.from("audit_logs").select("action, target_type, target_id, metadata, created_at").order("created_at", { ascending: false }).limit(Math.min(Math.max(Math.trunc(Number(limit ?? 15)), 1), 50));
+        if (action) q = q.ilike("action", `%${action}%`);
+        const { data, error } = await q;
+        if (error) throw new Error(error.message);
+        return { count: data?.length ?? 0, logs: data ?? [] };
       },
     };
 
