@@ -1605,11 +1605,12 @@ function FuturesAdminPanel() {
   );
 }
 
-function FutureOddAdminCard({ odd, disabled, onOdd, onStatus }: { odd: any; disabled: boolean; onOdd: (id: string, value: number) => void; onStatus: (odd: any, status: string, opts?: { score?: string; opponent?: string; at?: string }) => void }) {
+function FutureOddAdminCard({ odd, disabled, onOdd, onStatus, linkableMatches, onLink }: { odd: any; disabled: boolean; onOdd: (id: string, value: number) => void; onStatus: (odd: any, status: string, opts?: { score?: string; opponent?: string; at?: string }) => void; linkableMatches: any[]; onLink: (odd: any, matchId: string, side: "home" | "away") => void }) {
   const confirm = useConfirm();
   const [at, setAt] = useState(odd.future_next_at ? new Date(odd.future_next_at).toISOString().slice(0, 16) : "");
   const [score, setScore] = useState("");
   const [opponent, setOpponent] = useState("");
+  const [side, setSide] = useState<"home" | "away">(odd.future_match_side === "away" ? "away" : "home");
   const status = odd.future_status ?? "active";
   const progress = Array.isArray(odd.future_progress) ? odd.future_progress : [];
   const completed = progress.filter((p: any) => p && p.round != null).length;
