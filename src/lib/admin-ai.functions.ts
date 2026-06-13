@@ -113,6 +113,126 @@ const TOOLS = [
       parameters: { type: "object", properties: { days: { type: "number", description: "Window for P&L, default 30" } } },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "list_user_bets",
+      description: "List a user's most recent bets (id, stake, status, potential payout, created date). Use this to find a bet_id before refunding, voiding, suspending or deleting a bet.",
+      parameters: { type: "object", properties: { user_id: { type: "string" }, limit: { type: "number", description: "Max bets, default 10" }, status: { type: "string", description: "Optional filter e.g. 'pending', 'won', 'lost'" } }, required: ["user_id"] },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "void_bet",
+      description: "Void a bet by id. Optionally refund the stake to the user.",
+      parameters: { type: "object", properties: { bet_id: { type: "string" }, refund: { type: "boolean", description: "Return the stake to the user, default false" }, reason: { type: "string" } }, required: ["bet_id"] },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "suspend_bet",
+      description: "Suspend (freeze) a bet so it cannot settle until unsuspended.",
+      parameters: { type: "object", properties: { bet_id: { type: "string" }, reason: { type: "string" } }, required: ["bet_id"] },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "unsuspend_bet",
+      description: "Remove the suspension from a bet.",
+      parameters: { type: "object", properties: { bet_id: { type: "string" } }, required: ["bet_id"] },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "delete_bet",
+      description: "Permanently delete a bet by id. Optionally refund the stake first. Destructive — confirm intent.",
+      parameters: { type: "object", properties: { bet_id: { type: "string" }, refund: { type: "boolean", description: "Return the stake to the user before deleting, default false" }, reason: { type: "string" } }, required: ["bet_id"] },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "award_achievement",
+      description: "Grant an achievement/badge to a user.",
+      parameters: { type: "object", properties: { user_id: { type: "string" }, code: { type: "string", description: "Unique achievement code/slug" }, title: { type: "string" }, description: { type: "string" }, icon: { type: "string", description: "Optional emoji or icon name" } }, required: ["user_id", "code", "title"] },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "notify_user",
+      description: "Send a direct notification to a single user.",
+      parameters: { type: "object", properties: { user_id: { type: "string" }, title: { type: "string" }, body: { type: "string" }, link: { type: "string" } }, required: ["user_id", "title", "body"] },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "list_pending_requests",
+      description: "List pending token top-up requests and withdrawal requests awaiting admin review.",
+      parameters: { type: "object", properties: { kind: { type: "string", enum: ["tokens", "withdrawals", "both"], description: "Default 'both'" }, limit: { type: "number", description: "Max per kind, default 10" } } },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "review_token_request",
+      description: "Approve or deny a pending token top-up request by its id. Approving credits the requested tokens to the user.",
+      parameters: { type: "object", properties: { request_id: { type: "string" }, approve: { type: "boolean" }, reason: { type: "string" } }, required: ["request_id", "approve"] },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "review_withdrawal",
+      description: "Approve or deny a pending withdrawal request by its id.",
+      parameters: { type: "object", properties: { request_id: { type: "string" }, approve: { type: "boolean" }, reason: { type: "string" } }, required: ["request_id", "approve"] },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "match_exposure",
+      description: "Get the house's open risk exposure per match (potential payout liability). Useful to spot dangerous matches.",
+      parameters: { type: "object", properties: {} },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "set_virtual_cycle",
+      description: "Start or stop the virtual matches cycle/engine.",
+      parameters: { type: "object", properties: { running: { type: "boolean" } }, required: ["running"] },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "review_virtual_payout",
+      description: "Approve or deny a virtual match payout request by its id.",
+      parameters: { type: "object", properties: { request_id: { type: "string" }, approve: { type: "boolean" }, reason: { type: "string" } }, required: ["request_id", "approve"] },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "clear_leaderboard",
+      description: "Wipe/reset all leaderboard overrides. Destructive — confirm intent.",
+      parameters: { type: "object", properties: {} },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "recent_audit_logs",
+      description: "Read the most recent admin audit log entries (who did what, when).",
+      parameters: { type: "object", properties: { limit: { type: "number", description: "Default 15, max 50" }, action: { type: "string", description: "Optional action filter substring" } } },
+    },
+  },
 ] as const;
 
 export const adminAiChat = createServerFn({ method: "POST" })
