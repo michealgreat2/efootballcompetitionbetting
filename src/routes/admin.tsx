@@ -1487,6 +1487,30 @@ function FuturesAdminPanel() {
     await supabase.from("odds").update({ value } as any).eq("id", oddId);
     load();
   }
+  // Link a contender (odd) to a real normal match. We immediately pull the current
+  // score so the admin sees it right away; the DB trigger keeps it in sync afterwards.
+  async function linkContenderMatch(odd: any, matchId: string, side: "home" | "away") {
+    if (!matchId) {
+      await supabase.from("odds").update({ future_match_id: null, future_match_side: null, future_live_score: null, future_live_outcome: null, future_live_opponent: null } as any).eq("id", odd.id);
+      toast.success("Unlinked from match");
+      load();
+      return;
+    }
+    const lm = linkableMatches.find((m) => m.id === matchId);
+    const cs = lm ? (side === "away" ? lm.away_score : lm.home_score) : null;
+    const os = lm ? (side === "away" ? lm.home_score : lm.away_score) : null;
+    const opp = lm ? (side === "away" ? lm.home_team?.name : lm.away_team?.name) : null;
+    const ended = lm && ["ended", "completed", "settled"].includes(lm.status);
+    await supabase.from("odds").update({
+      future_match_id: matchId,
+      future_match_side: side,
+      future_live_score: lm ? `${cs ?? 0}-${os ?? 0}` : null,
+      future_live_opponent: opp ?? null,
+      future_live_outcome: ended ? ((cs ?? 0) >= (os ?? 0) ? "won" : "lost") : "pending",
+    } as any).eq("id", odd.id);
+    toast.success("Linked — scores auto-update from this match");
+    load();
+  }
   async function updateFutureStatus(odd: any, status: string, opts: { score?: string; opponent?: string; at?: string } = {}) {
     const progress = Array.isArray(odd.future_progress) ? [...odd.future_progress] : [];
     const completed = progress.filter((p: any) => p && p.round != null).length;
