@@ -79,6 +79,7 @@ function FuturesAdminPanel() {
     if (!ids.a || !ids.b) { toast.error("Could not prepare futures teams"); return; }
     const { data: m, error } = await supabase.from("matches").insert({
       name: draft.title.trim(), home_team_id: ids.a, away_team_id: ids.b, match_kind: "future", is_featured: true, marketing_enabled: true,
+      restrict_repeat_contender: restrictRepeat,
       location: `Opens ${new Date(draft.opens_at).toLocaleString()} · ${draft.next_title || "Tournament"}`, start_time: new Date(draft.closes_at).toISOString(), lock_time: new Date(draft.opens_at).toISOString(), status: "scheduled",
     } as any).select().single();
     if (error) { toast.error(error.message); return; }
