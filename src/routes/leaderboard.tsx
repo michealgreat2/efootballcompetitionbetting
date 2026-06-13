@@ -52,14 +52,10 @@ function Page() {
       const { gangs, shooters } = await loadStandings();
       setGangs(gangs);
       setShooters(shooters);
+      const { data: s } = await supabase.from("app_settings").select("leaderboard_header_url").eq("id", 1).maybeSingle();
+      setHeaderUrl((s as any)?.leaderboard_header_url ?? null);
     };
     run();
-    supabase
-      .from("app_settings")
-      .select("leaderboard_header_url")
-      .eq("id", 1)
-      .maybeSingle()
-      .then(({ data }) => setHeaderUrl((data as any)?.leaderboard_header_url ?? null));
     const ch = supabase
       .channel("leaderboard-live")
       .on("postgres_changes", { event: "*", schema: "public", table: "leaderboard_overrides" }, run)
