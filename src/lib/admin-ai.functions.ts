@@ -557,6 +557,93 @@ export const adminAiChat = createServerFn({ method: "POST" })
         if (error) throw new Error(error.message);
         return { count: data?.length ?? 0, logs: data ?? [] };
       },
+      async list_teams({ query, limit }) {
+        let q = supabase.from("teams").select("id, name, gang_type").order("name").limit(Math.min(Math.max(Math.trunc(Number(limit ?? 25)), 1), 100));
+        if (query) q = q.ilike("name", `%${query}%`);
+        const { data, error } = await q;
+        if (error) throw new Error(error.message);
+        return { count: data?.length ?? 0, teams: data ?? [] };
+      },
+      async create_team({ name, logo_url, gang_type }) {
+        const { data, error } = await supabase.from("teams").insert({ name, logo_url: logo_url ?? null, gang_type: gang_type ?? null }).select("id, name").single();
+        if (error) throw new Error(error.message);
+        await supabase.rpc("admin_log_action", { _action: "team_created", _target_type: "team", _target_id: data.id, _metadata: { name, source: "admin_ai" } });
+        return { team_id: data.id, name: data.name };
+      },
+      async list_categories() {
+        const { data, error } = await supabase.from("categories").select("id, name").order("name");
+        if (error) throw new Error(error.message);
+        return { categories: data ?? [] };
+      },
+      async list_matches({ status, query, limit }) {
+        let q = supabase.from("matches").select("id, name, status, start_time, home_score, away_score, is_featured, is_archived").order("start_time", { ascending: false }).limit(Math.min(Math.max(Math.trunc(Number(limit ?? 15)), 1), 50));
+        if (status) q = q.eq("status", String(status));
+        if (query) q = q.ilike("name", `%${query}%`);
+        const { data, error } = await q;
+        if (error) throw new Error(error.message);
+        return { count: data?.length ?? 0, matches: data ?? [] };
+      },
+      async create_match({ home_team_id, away_team_id, name, start_time, location, category_id, featured, home_odds, draw_odds, away_odds }) {
+        if (home_team_id === away_team_id) throw new Error("Home and away teams must be different");
+        const { data: teams, error: te } = await supabase.from("teams").select("id, name").in("id", [home_team_id, away_team_id]);
+        if (te) throw new Error(te.message);
+        const homeName = teams?.find((t: any) => t.id === home_team_id)?.name;
+        const awayName = teams?.find((t: any) => t.id === away_team_id)?.name;
+        if (!homeName || !awayName) throw new Error("One or both team ids were not found. Use list_teams or create_team first.");
+        const { data: m, error } = await supabase.from("matches").insert({
+          name: name || `${homeName} vs ${awayName}`,
+          home_team_id, away_team_id,
+          start_time: start_time ? new Date(start_time).toISOString() : new Date().toISOString(),
+          location: location ?? null, status: "scheduled",
+          category_id: category_id || null, is_featured: !!featured,
+        }).select("id, name").single();
+        if (error) throw new Error(error.message);
+        const { data: market } = await supabase.from("markets").insert({ match_id: m.id, name: "Match Winner" }).select("id").single();
+        if (market) {
+          await supabase.from("odds").insert([
+            { market_id: market.id, label: homeName, value: Number(home_odds ?? 2.0) },
+            { market_id: market.id, label: "Draw", value: Number(draw_odds ?? 3.0) },
+            { market_id: market.id, label: awayName, value: Number(away_odds ?? 2.0) },
+          ]);
+        }
+        await supabase.rpc("admin_log_action", { _action: "match_created", _target_type: "match", _target_id: m.id, _metadata: { name: m.name, source: "admin_ai" } });
+        return { match_id: m.id, name: m.name };
+      },
+      async set_match_status({ match_id, status }) {
+        const { error } = await supabase.from("matches").update({ status: String(status) }).eq("id", match_id);
+        if (error) throw new Error(error.message);
+        await supabase.rpc("admin_log_action", { _action: "match_status_changed", _target_type: "match", _target_id: match_id, _metadata: { status, source: "admin_ai" } });
+        return { match_id, status };
+      },
+      async set_match_score({ match_id, home_score, away_score }) {
+        const hs = Math.trunc(Number(home_score)), as = Math.trunc(Number(away_score));
+        const { error } = await supabase.from("matches").update({ home_score: hs, away_score: as }).eq("id", match_id);
+        if (error) throw new Error(error.message);
+        return { match_id, home_score: hs, away_score: as };
+      },
+      async settle_match({ match_id, home_score, away_score, winner }) {
+        const hs = Math.trunc(Number(home_score)), as = Math.trunc(Number(away_score));
+        const { data: mm, error: me } = await supabase.from("matches").select("home_team_id, away_team_id").eq("id", match_id).maybeSingle();
+        if (me) throw new Error(me.message);
+        if (!mm) throw new Error("Match not found");
+        const winnerId = winner === "home" ? mm.home_team_id : winner === "away" ? mm.away_team_id : null;
+        const { error } = await supabase.from("matches").update({ home_score: hs, away_score: as, status: "ended", winner_team_id: winnerId, settled_at: new Date().toISOString() }).eq("id", match_id);
+        if (error) throw new Error(error.message);
+        await supabase.from("markets").update({ is_open: false }).eq("match_id", match_id);
+        await supabase.rpc("admin_log_action", { _action: "match_settled", _target_type: "match", _target_id: match_id, _metadata: { home_score: hs, away_score: as, winner, source: "admin_ai" } });
+        return { match_id, home_score: hs, away_score: as, winner };
+      },
+      async set_match_featured({ match_id, featured }) {
+        const { error } = await supabase.from("matches").update({ is_featured: !!featured }).eq("id", match_id);
+        if (error) throw new Error(error.message);
+        return { match_id, featured: !!featured };
+      },
+      async archive_match({ match_id }) {
+        const { error } = await supabase.from("matches").update({ is_archived: true }).eq("id", match_id);
+        if (error) throw new Error(error.message);
+        await supabase.rpc("admin_log_action", { _action: "match_archived", _target_type: "match", _target_id: match_id, _metadata: { source: "admin_ai" } });
+        return { match_id, archived: true };
+      },
     };
 
     const convo: ChatMsg[] = [
