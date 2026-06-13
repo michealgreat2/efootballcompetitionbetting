@@ -453,7 +453,7 @@ function UsersPanel() {
         <div className="relative md:col-span-1">
           <Filter className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-primary/70" />
           <Input
-            placeholder="Search name, email, gang…"
+            placeholder="Search name, email, gang, Discord…"
             value={q}
             onChange={(e) => setQ(e.target.value)}
             className="pl-9 bg-background/40 border-primary/25 focus-visible:ring-primary/60"
