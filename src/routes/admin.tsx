@@ -1319,7 +1319,7 @@ async function settleFutureBets(matchId: string, winningOddIds: string[], winnin
 function ShooterMatchWizard({ onClose }: { onClose: () => void }) {
   const [players, setPlayers] = useState<any[]>([]);
   const [teams, setTeams] = useState<any[]>([]);
-  const [form, setForm] = useState({ home_player_id: "", away_player_id: "", oddsA: 2, draw: 3.5, oddsB: 2, name: "", start_time: "", location: "", featured: true, marketing: true });
+  const [form, setForm] = useState({ home_player_id: "", away_player_id: "", oddsA: 2, draw: 3.5, oddsB: 2, name: "", start_time: "", location: "", featured: true, marketing: true, homePresent: true, awayPresent: true, restrictRepeat: false });
 
   useEffect(() => {
     Promise.all([
@@ -1348,6 +1348,7 @@ function ShooterMatchWizard({ onClose }: { onClose: () => void }) {
       location: form.location || "Shooter 1v1",
       start_time: form.start_time ? new Date(form.start_time).toISOString() : new Date().toISOString(),
       status: "scheduled",
+      home_present: form.homePresent, away_present: form.awayPresent, restrict_repeat_contender: form.restrictRepeat,
     } as any).select().single();
     if (error) { toast.error(error.message); return; }
     const { data: market } = await supabase.from("markets").insert({ match_id: m.id, name: "Shooter Winner" }).select().single();
@@ -1380,6 +1381,11 @@ function ShooterMatchWizard({ onClose }: { onClose: () => void }) {
             <label className="flex items-center gap-2 rounded-lg border border-primary/20 bg-card/60 p-3"><Switch checked={form.featured} onCheckedChange={(v) => setForm({ ...form, featured: v })} />Feature on homepage</label>
             <label className="flex items-center gap-2 rounded-lg border border-accent/20 bg-card/60 p-3"><Switch checked={form.marketing} onCheckedChange={(v) => setForm({ ...form, marketing: v })} />Post for marketing</label>
           </div>
+          <div className="grid grid-cols-2 gap-2 text-sm">
+            <label className="flex items-center gap-2 rounded-lg border border-primary/20 bg-card/60 p-3"><Switch checked={form.homePresent} onCheckedChange={(v) => setForm({ ...form, homePresent: v })} />Shooter A present (counts on Leaderboard)</label>
+            <label className="flex items-center gap-2 rounded-lg border border-primary/20 bg-card/60 p-3"><Switch checked={form.awayPresent} onCheckedChange={(v) => setForm({ ...form, awayPresent: v })} />Shooter B present (counts on Leaderboard)</label>
+          </div>
+          <label className="flex items-center gap-2 rounded-lg border border-accent/20 bg-card/60 p-3 text-sm"><Switch checked={form.restrictRepeat} onCheckedChange={(v) => setForm({ ...form, restrictRepeat: v })} />Restrict repeat bets — one bet per contender on this match</label>
         </div>
         <DialogFooter><Button variant="outline" onClick={onClose}>Cancel</Button><Button className="btn-luxury" onClick={create}>Create Shooter Match</Button></DialogFooter>
       </DialogContent>
