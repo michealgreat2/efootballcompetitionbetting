@@ -60,7 +60,7 @@ function Page() {
       .on("postgres_changes", { event: "*", schema: "public", table: "leaderboard_overrides" }, run)
       .on("postgres_changes", { event: "*", schema: "public", table: "matches" }, run)
       .on("postgres_changes", { event: "*", schema: "public", table: "app_settings" }, () =>
-        supabase.from("app_settings").select("leaderboard_header_url").eq("id", 1).maybeSingle().then(({ data }) => setHeaderUrl((data as any)?.leaderboard_header_url ?? null)),
+        supabase.from("app_settings").select("leaderboard_header_url").eq("id", 1).maybeSingle().then(({ data }) => setHeaderUrl((data as any)?.leaderboard_header_url || leaderboardHeaderAsset.url)),
       )
       .subscribe();
     return () => { supabase.removeChannel(ch); };
@@ -71,7 +71,7 @@ function Page() {
     (async () => {
       try {
         const { data, error } = await supabase.from("app_settings").select("leaderboard_header_url").eq("id", 1).maybeSingle();
-        if (active && !error && (data as any)?.leaderboard_header_url) setHeaderUrl((data as any).leaderboard_header_url);
+        if (active && !error) setHeaderUrl((data as any)?.leaderboard_header_url || leaderboardHeaderAsset.url);
       } catch { /* ignore */ }
     })();
     return () => { active = false; };
