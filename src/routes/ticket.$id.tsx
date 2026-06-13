@@ -328,13 +328,13 @@ export function BetVoucher({ bet, sels, statusBadge, allWon, copy, shareCode }: 
             <span className="text-center">{statusBarText}</span>
           </div>
 
-          {/* CASHOUT (only if open + all selections won) */}
-          {status === "open" && allWon && (
-            <CashoutButton betId={bet.id} amount={Number(bet.potential_payout)} />
+          {/* CASHOUT (open + every selection currently winning) */}
+          {status === "open" && allWinning && (
+            <CashoutButton betId={bet.id} amount={cashoutValue} full={isFullWin} />
           )}
-          {status === "open" && !allWon && (
+          {status === "open" && !allWinning && (
             <div className="text-center text-[11px] text-muted-foreground flex items-center justify-center gap-1">
-              <LockIcon className="h-3 w-3" />Awaiting match settlement. Cash-out unlocks when every selection wins.
+              <LockIcon className="h-3 w-3" />Cash-out unlocks while every selection is winning so far.
             </div>
           )}
           {isVirtualTicket && status === "won" && (
