@@ -73,6 +73,7 @@ export type Database = {
           about_us: string | null
           admin_ai_enabled: boolean
           admin_ai_model: string
+          allow_rebet: boolean
           challenge_reward_multiplier: number
           contact_email: string | null
           contact_phone: string | null
@@ -151,6 +152,7 @@ export type Database = {
           about_us?: string | null
           admin_ai_enabled?: boolean
           admin_ai_model?: string
+          allow_rebet?: boolean
           challenge_reward_multiplier?: number
           contact_email?: string | null
           contact_phone?: string | null
@@ -229,6 +231,7 @@ export type Database = {
           about_us?: string | null
           admin_ai_enabled?: boolean
           admin_ai_model?: string
+          allow_rebet?: boolean
           challenge_reward_multiplier?: number
           contact_email?: string | null
           contact_phone?: string | null
