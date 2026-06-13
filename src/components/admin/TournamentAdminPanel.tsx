@@ -420,8 +420,27 @@ export function TournamentAdminPanel() {
           <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-gold" />
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2"><Swords className="h-5 w-5 text-primary" />{resultMatch?.label ?? "Match"} Result</DialogTitle>
-            <DialogDescription>Enter the score for each side, then choose who advances to the next round.</DialogDescription>
+            <DialogDescription>Link a live match to auto-fill scores, then mark each shooter Won, Qualified, Lost or Disqualified.</DialogDescription>
           </DialogHeader>
+
+          {/* link a real/live match — scores then auto-sync from it */}
+          <div className="space-y-1">
+            <Label className="text-xs text-muted-foreground">Linked live match (scores auto-update from it)</Label>
+            <select
+              className="w-full bg-background border border-border rounded-md text-sm px-2 py-1.5"
+              value={linkId}
+              onChange={(e) => linkLiveMatch(e.target.value)}
+            >
+              <option value="">— not linked —</option>
+              {linkableMatches.map((f) => (
+                <option key={f.id} value={f.id}>
+                  {f.name} · {f.home_score ?? 0}–{f.away_score ?? 0} ({f.status})
+                </option>
+              ))}
+            </select>
+            {linkId && <p className="text-[11px] text-emerald-400">Scores below are pulled from the live match. They auto-update whenever the match score changes.</p>}
+          </div>
+
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <Label className="text-xs text-muted-foreground truncate">{rA?.name ?? "Slot A (TBD)"} — score</Label>
@@ -432,10 +451,26 @@ export function TournamentAdminPanel() {
               <Input type="number" min={0} value={sB} onChange={(e) => setSB(e.target.value)} placeholder="0" />
             </div>
           </div>
-          <DialogFooter className="flex-col gap-2 sm:flex-col">
-            <div className="grid grid-cols-2 gap-2 w-full">
-              <Button className="btn-luxury" disabled={!rA} onClick={() => submitResult(resultMatch!.participant_a_id)}><Crown className="h-4 w-4 mr-1" />{rA?.name ?? "A"} wins</Button>
-              <Button className="btn-luxury" disabled={!rB} onClick={() => submitResult(resultMatch!.participant_b_id)}><Crown className="h-4 w-4 mr-1" />{rB?.name ?? "B"} wins</Button>
+          <DialogFooter className="flex-col gap-3 sm:flex-col">
+            {/* Participant A outcomes */}
+            <div className="w-full space-y-1.5">
+              <div className="text-xs font-bold flex items-center gap-1 text-amber-200 truncate"><Crown className="h-3.5 w-3.5 text-primary" />{rA?.name ?? "Slot A"}</div>
+              <div className="grid grid-cols-4 gap-1.5">
+                <Button size="sm" className="btn-luxury text-xs" disabled={!rA} onClick={() => submitResult(resultMatch!.participant_a_id, "won")}>Won</Button>
+                <Button size="sm" variant="outline" className="text-xs" disabled={!rA} onClick={() => submitResult(resultMatch!.participant_a_id, "qualified")}>Qualified</Button>
+                <Button size="sm" variant="outline" className="text-xs" disabled={!rB} onClick={() => submitResult(resultMatch!.participant_b_id, "won")}>Lost</Button>
+                <Button size="sm" variant="destructive" className="text-xs" disabled={!rB || !rA} onClick={() => submitResult(resultMatch!.participant_b_id, "won", resultMatch!.participant_a_id)}>DQ</Button>
+              </div>
+            </div>
+            {/* Participant B outcomes */}
+            <div className="w-full space-y-1.5">
+              <div className="text-xs font-bold flex items-center gap-1 text-amber-200 truncate"><Crown className="h-3.5 w-3.5 text-primary" />{rB?.name ?? "Slot B"}</div>
+              <div className="grid grid-cols-4 gap-1.5">
+                <Button size="sm" className="btn-luxury text-xs" disabled={!rB} onClick={() => submitResult(resultMatch!.participant_b_id, "won")}>Won</Button>
+                <Button size="sm" variant="outline" className="text-xs" disabled={!rB} onClick={() => submitResult(resultMatch!.participant_b_id, "qualified")}>Qualified</Button>
+                <Button size="sm" variant="outline" className="text-xs" disabled={!rA} onClick={() => submitResult(resultMatch!.participant_a_id, "won")}>Lost</Button>
+                <Button size="sm" variant="destructive" className="text-xs" disabled={!rA || !rB} onClick={() => submitResult(resultMatch!.participant_a_id, "won", resultMatch!.participant_b_id)}>DQ</Button>
+              </div>
             </div>
             <Button variant="outline" className="w-full" onClick={() => submitResult(null)}>Save scores only (no winner yet)</Button>
           </DialogFooter>
