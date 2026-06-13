@@ -1174,6 +1174,7 @@ function MatchesPanel() {
     await supabase.from("markets").update({ is_open: false }).eq("match_id", m.id);
     await settleBetsForMatch(m.id, winnerId, hs, as);
     await logAudit("match_settled", "match", m.id, { home_score: hs, away_score: as, winner_team_id: winnerId });
+    window.dispatchEvent(new CustomEvent("admin:futures-refresh", { detail: { matchId: m.id } }));
     toast.success("Match settled — bets paid out"); load();
   }
   async function deleteMatch(id: string) {
@@ -1201,6 +1202,7 @@ function MatchesPanel() {
   async function updateLiveScore(m: any, hs: number, as: number) {
     await supabase.from("matches").update({ home_score: hs, away_score: as }).eq("id", m.id);
     await logAudit("match_live_score", "match", m.id, { home_score: hs, away_score: as });
+    window.dispatchEvent(new CustomEvent("admin:futures-refresh", { detail: { matchId: m.id } }));
     load();
   }
 
@@ -1454,6 +1456,18 @@ function FuturesAdminPanel() {
     setLinkableMatches(lm ?? []);
   }
   useEffect(() => { load(); }, []);
+  useEffect(() => {
+    const refresh = () => load();
+    window.addEventListener("admin:futures-refresh", refresh);
+    const ch = supabase.channel("admin-futures-linked-score-refresh")
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "odds" }, refresh)
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "matches" }, refresh)
+      .subscribe();
+    return () => {
+      window.removeEventListener("admin:futures-refresh", refresh);
+      supabase.removeChannel(ch);
+    };
+  }, []);
 
   async function ensureFutureTeams() {
     const { data } = await supabase.from("teams").select("id,name").in("name", ["LSL Futures", "Season Field"]);
