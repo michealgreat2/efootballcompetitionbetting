@@ -45,6 +45,7 @@ function Medal({ i }: { i: number }) {
 function Page() {
   const [shooters, setShooters] = useState<LbRow[]>([]);
   const [gangs, setGangs] = useState<LbRow[]>([]);
+  const [headerUrl, setHeaderUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const run = async () => {
@@ -53,10 +54,19 @@ function Page() {
       setShooters(shooters);
     };
     run();
+    supabase
+      .from("app_settings")
+      .select("leaderboard_header_url")
+      .eq("id", 1)
+      .maybeSingle()
+      .then(({ data }) => setHeaderUrl((data as any)?.leaderboard_header_url ?? null));
     const ch = supabase
       .channel("leaderboard-live")
       .on("postgres_changes", { event: "*", schema: "public", table: "leaderboard_overrides" }, run)
       .on("postgres_changes", { event: "*", schema: "public", table: "matches" }, run)
+      .on("postgres_changes", { event: "*", schema: "public", table: "app_settings" }, () =>
+        supabase.from("app_settings").select("leaderboard_header_url").eq("id", 1).maybeSingle().then(({ data }) => setHeaderUrl((data as any)?.leaderboard_header_url ?? null)),
+      )
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, []);
@@ -64,15 +74,21 @@ function Page() {
   return (
     <Layout>
       <div className="container py-8 max-w-5xl">
-        <div className="relative mb-6 rounded-2xl overflow-hidden glass-ice border border-primary/30">
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-500/10 to-transparent" />
-          <div className="relative flex items-center gap-3 px-5 py-5">
-            <span className="grid place-items-center h-12 w-12 rounded-xl border border-amber-400/40 bg-black/40 shadow-[0_0_20px_-4px_rgba(212,175,55,0.6)]">
-              <Trophy className="h-6 w-6 text-amber-300" />
-            </span>
-            <h1 className="text-3xl md:text-4xl font-black tracking-tight gradient-gold-text drop-shadow-[0_2px_8px_rgba(212,175,55,0.3)]">LEADERBOARD</h1>
+        {headerUrl ? (
+          <div className="relative mb-6 rounded-2xl overflow-hidden border-2 border-amber-400/60 shadow-[0_0_40px_-10px_rgba(212,175,55,0.55)]">
+            <img src={headerUrl} alt="Lomita Shooters League Leaderboard" className="w-full h-auto block" />
           </div>
-        </div>
+        ) : (
+          <div className="relative mb-6 rounded-2xl overflow-hidden glass-ice border-2 border-amber-400/60 shadow-[0_0_40px_-10px_rgba(212,175,55,0.55)]">
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-500/10 to-transparent" />
+            <div className="relative flex items-center gap-3 px-5 py-5">
+              <span className="grid place-items-center h-12 w-12 rounded-xl border border-amber-400/40 bg-black/40 shadow-[0_0_20px_-4px_rgba(212,175,55,0.6)]">
+                <Trophy className="h-6 w-6 text-amber-300" />
+              </span>
+              <h1 className="text-3xl md:text-4xl font-black tracking-tight gradient-gold-text drop-shadow-[0_2px_8px_rgba(212,175,55,0.3)]">LEADERBOARD</h1>
+            </div>
+          </div>
+        )}
 
         <Tabs defaultValue="gangs">
           <TabsList className="bg-card/40 backdrop-blur-xl border border-primary/20">
