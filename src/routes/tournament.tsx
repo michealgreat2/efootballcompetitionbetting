@@ -66,11 +66,11 @@ function Page() {
         )}
       </div>
 
-      <div className="h-[calc(100vh-140px)] w-full px-1 pb-2">
+      <div className="min-h-[calc(100vh-140px)] w-full px-1 pb-6">
         {loading ? (
-          <div className="h-full grid place-items-center text-muted-foreground">Loading bracket…</div>
+          <div className="min-h-[60vh] grid place-items-center text-muted-foreground">Loading bracket…</div>
         ) : !tournament || matches.length === 0 ? (
-          <div className="h-full grid place-items-center text-center px-6">
+          <div className="min-h-[60vh] grid place-items-center text-center px-6">
             <div>
               <Trophy className="h-14 w-14 text-amber-300/60 mx-auto mb-3" />
               <div className="text-lg font-bold">No active tournament yet</div>
