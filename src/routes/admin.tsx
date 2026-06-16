@@ -42,6 +42,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip as RTooltip,
 } from "recharts";
 import { useConfirm } from "@/components/ConfirmDialog";
+import { ActionConfirmDialog } from "@/components/ActionConfirmDialog";
 import { SpotlightsAdminPanel } from "@/components/Spotlight";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { ClansAdminPanel } from "@/components/admin/ClansAdminPanel";
@@ -60,6 +61,9 @@ function AdminPage() {
   const { isAdmin, isMod, loading } = useAuth();
   const nav = useNavigate();
   const [alerts, setAlerts] = useState<Record<string, number>>({});
+  // Toggle the frosted-glass blur on the whole console so admins can verify
+  // sensitive data alignment/layout against a clean, unblurred surface.
+  const [unblurred, setUnblurred] = useState(false);
   // Default to analytics for admins; re-sync once auth resolves so a reload
   // never lands on the Tickets tab when an admin refreshes the page.
   const [activeTab, setActiveTab] = useState<string>("analytics");
