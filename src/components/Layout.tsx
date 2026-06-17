@@ -51,12 +51,24 @@ export const Layout = ({ children }: { children: ReactNode }) => {
   useVirtualHeartbeat();
   useForceReloadBroadcast();
   const [railOpen, setRailOpen] = useState(false);
+  // Admin-configurable site-wide background (falls back to bundled nebula art).
+  const [siteBg, setSiteBg] = useState<string | null>(null);
+  useEffect(() => {
+    supabase.from("app_settings").select("site_bg_url").eq("id", 1).maybeSingle()
+      .then(({ data }) => setSiteBg((data as any)?.site_bg_url ?? null));
+    const ch = supabase.channel("site-bg")
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "app_settings" }, (p: any) => {
+        setSiteBg(p.new?.site_bg_url ?? null);
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, []);
 
   return (
     <div className="relative min-h-screen">
       <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
         <img
-          src={lslPlatformBg.url}
+          src={siteBg || lslPlatformBg.url}
           alt=""
           aria-hidden
           className="absolute inset-0 h-full w-full object-cover"
@@ -82,7 +94,8 @@ export const Layout = ({ children }: { children: ReactNode }) => {
             {user && <NavLink to="/withdraw" icon={Wallet} label="Withdraw" />}
             {user && <NavLink to="/support" icon={LifeBuoy} label="Support" />}
             {user && <NavLink to="/settings" icon={SettingsIcon} label="Settings" />}
-            {(isAdmin || isMod) && <NavLink to="/admin" icon={Shield} label={isAdmin ? "Admin" : "Mod"} danger />}
+            {isAdmin && <NavLink to="/admin" icon={Shield} label="Admin" danger />}
+            {!isAdmin && isMod && <NavLink to="/mod" icon={Shield} label="Mod" danger />}
           </nav>
           <div className="flex items-center gap-2 shrink-0 ml-auto lg:ml-0">
             {user && profile ? (
@@ -147,7 +160,8 @@ export const Layout = ({ children }: { children: ReactNode }) => {
             <MobLink to="/settings" icon={SettingsIcon} label="Settings" />
             <MobLink to="/support" icon={LifeBuoy} label="Help" />
           </>}
-          {(isAdmin || isMod) && <MobLink to="/admin" icon={Shield} label={isAdmin ? "Admin" : "Mod"} />}
+          {isAdmin && <MobLink to="/admin" icon={Shield} label="Admin" />}
+          {!isAdmin && isMod && <MobLink to="/mod" icon={Shield} label="Mod" />}
           </>}
         </div>
       </nav>
