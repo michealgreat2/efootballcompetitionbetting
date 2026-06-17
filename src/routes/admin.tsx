@@ -3538,6 +3538,31 @@ function SettingsPanel() {
         <FieldLuxe label="Link (optional)"><Input value={s.popup_ad_link ?? ""} onChange={(e) => setS({ ...s, popup_ad_link: e.target.value })} /></FieldLuxe>
       </SettingsSection>
 
+      <SettingsSection icon={ImageIcon} title="Backgrounds & Appearance" subtitle="Upload a site-wide background and an admin console header image.">
+        <FieldLuxe label="Site background (all pages)">
+          <Input type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && uploadInto("site_bg_url", e.target.files[0])} />
+        </FieldLuxe>
+        <p className="text-[10px] text-muted-foreground">Used as the full-screen backdrop across every page. For best results use a large landscape image (1920×1080 or larger). It is auto-scaled to cover the screen and dimmed for readability — no need to pre-process it.</p>
+        {s.site_bg_url && (
+          <div className="space-y-1">
+            <img src={s.site_bg_url} alt="" className="w-full max-h-40 object-cover rounded border border-border" />
+            <Button variant="ghost" size="sm" className="text-destructive h-7" onClick={() => setS({ ...s, site_bg_url: null })}>Remove site background</Button>
+          </div>
+        )}
+        <div className="h-px bg-border/60 my-1" />
+        <FieldLuxe label="Admin console header image">
+          <Input type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && uploadInto("admin_hero_url", e.target.files[0])} />
+        </FieldLuxe>
+        <p className="text-[10px] text-muted-foreground">Shown behind the “Super Admin Console” banner at the top of the admin & moderator pages. A wide image works best.</p>
+        {s.admin_hero_url && (
+          <div className="space-y-1">
+            <img src={s.admin_hero_url} alt="" className="w-full max-h-40 object-cover rounded border border-border" />
+            <Button variant="ghost" size="sm" className="text-destructive h-7" onClick={() => setS({ ...s, admin_hero_url: null })}>Remove header image</Button>
+          </div>
+        )}
+        <p className="text-[10px] text-amber-300/80">Remember to press “Save settings” below to apply.</p>
+      </SettingsSection>
+
       <Card className="glass-strong p-4 lg:col-span-2 flex flex-wrap items-center gap-2 justify-between">
         <div className="flex items-center gap-2 text-sm text-muted-foreground"><Lock className="h-4 w-4" />Saving writes an audit log entry.</div>
         <div className="flex gap-2 flex-wrap">
