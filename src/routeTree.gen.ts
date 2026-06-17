@@ -21,6 +21,7 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as NotificationsRouteImport } from './routes/notifications'
+import { Route as ModRouteImport } from './routes/mod'
 import { Route as MatchesRouteImport } from './routes/matches'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
@@ -97,6 +98,11 @@ const ProfileRoute = ProfileRouteImport.update({
 const NotificationsRoute = NotificationsRouteImport.update({
   id: '/notifications',
   path: '/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ModRoute = ModRouteImport.update({
+  id: '/mod',
+  path: '/mod',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MatchesRoute = MatchesRouteImport.update({
@@ -198,6 +204,7 @@ export interface FileRoutesByFullPath {
   '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
   '/matches': typeof MatchesRouteWithChildren
+  '/mod': typeof ModRoute
   '/notifications': typeof NotificationsRoute
   '/profile': typeof ProfileRoute
   '/register': typeof RegisterRoute
@@ -229,6 +236,7 @@ export interface FileRoutesByTo {
   '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
   '/matches': typeof MatchesRouteWithChildren
+  '/mod': typeof ModRoute
   '/notifications': typeof NotificationsRoute
   '/profile': typeof ProfileRoute
   '/register': typeof RegisterRoute
@@ -261,6 +269,7 @@ export interface FileRoutesById {
   '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
   '/matches': typeof MatchesRouteWithChildren
+  '/mod': typeof ModRoute
   '/notifications': typeof NotificationsRoute
   '/profile': typeof ProfileRoute
   '/register': typeof RegisterRoute
@@ -294,6 +303,7 @@ export interface FileRouteTypes {
     | '/leaderboard'
     | '/login'
     | '/matches'
+    | '/mod'
     | '/notifications'
     | '/profile'
     | '/register'
@@ -325,6 +335,7 @@ export interface FileRouteTypes {
     | '/leaderboard'
     | '/login'
     | '/matches'
+    | '/mod'
     | '/notifications'
     | '/profile'
     | '/register'
@@ -356,6 +367,7 @@ export interface FileRouteTypes {
     | '/leaderboard'
     | '/login'
     | '/matches'
+    | '/mod'
     | '/notifications'
     | '/profile'
     | '/register'
@@ -388,6 +400,7 @@ export interface RootRouteChildren {
   LeaderboardRoute: typeof LeaderboardRoute
   LoginRoute: typeof LoginRoute
   MatchesRoute: typeof MatchesRouteWithChildren
+  ModRoute: typeof ModRoute
   NotificationsRoute: typeof NotificationsRoute
   ProfileRoute: typeof ProfileRoute
   RegisterRoute: typeof RegisterRoute
@@ -489,6 +502,13 @@ declare module '@tanstack/react-router' {
       path: '/notifications'
       fullPath: '/notifications'
       preLoaderRoute: typeof NotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mod': {
+      id: '/mod'
+      path: '/mod'
+      fullPath: '/mod'
+      preLoaderRoute: typeof ModRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/matches': {
@@ -648,6 +668,7 @@ const rootRouteChildren: RootRouteChildren = {
   LeaderboardRoute: LeaderboardRoute,
   LoginRoute: LoginRoute,
   MatchesRoute: MatchesRouteWithChildren,
+  ModRoute: ModRoute,
   NotificationsRoute: NotificationsRoute,
   ProfileRoute: ProfileRoute,
   RegisterRoute: RegisterRoute,
