@@ -18,8 +18,9 @@ export function PopupAd() {
 
   if (!open || !s) return null;
   const close = () => { sessionStorage.setItem(`popup-${s.updated_at}`, "1"); setOpen(false); };
-  const sizeCls = s.popup_ad_size === "xl" ? "max-w-3xl" : s.popup_ad_size === "medium" ? "max-w-md" : "max-w-2xl";
-  const imgCls = s.popup_ad_size === "xl" ? "max-h-[70vh]" : s.popup_ad_size === "medium" ? "max-h-80" : "max-h-[60vh]";
+  const isFull = s.popup_ad_size === "full";
+  const sizeCls = isFull ? "max-w-[96vw]" : s.popup_ad_size === "xl" ? "max-w-3xl" : s.popup_ad_size === "medium" ? "max-w-md" : "max-w-2xl";
+  const imgCls = isFull ? "max-h-[88vh]" : s.popup_ad_size === "xl" ? "max-h-[70vh]" : s.popup_ad_size === "medium" ? "max-h-80" : "max-h-[60vh]";
   const hasText = !!(s.popup_ad_text && s.popup_ad_text.trim());
   const hasImage = !!s.popup_ad_image;
   const Inner = (
@@ -29,7 +30,7 @@ export function PopupAd() {
         <img
           src={s.popup_ad_image}
           alt=""
-          className={`w-full ${imgCls} object-contain drop-shadow-2xl`}
+          className={`w-full ${imgCls} ${isFull ? "object-cover" : "object-contain"} drop-shadow-2xl rounded-2xl`}
           style={{ background: "transparent" }}
         />
       )}

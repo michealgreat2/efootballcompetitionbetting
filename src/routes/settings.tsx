@@ -47,7 +47,7 @@ function SettingsPage() {
             <Link to="/profile" className="flex items-center justify-between hover:bg-muted/40 rounded-md px-2 py-3 transition">
               <div>
                 <div className="font-semibold text-sm">Profile details</div>
-                <div className="text-xs text-muted-foreground">Name, avatar, gang, contact info</div>
+                <div className="text-xs text-muted-foreground">Name, gang, contact info, email & password</div>
               </div>
               <ChevronRight className="h-4 w-4 text-muted-foreground" />
             </Link>

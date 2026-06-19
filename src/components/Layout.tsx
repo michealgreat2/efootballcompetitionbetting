@@ -148,7 +148,7 @@ export const Layout = ({ children }: { children: ReactNode }) => {
       <nav
         className="lg:hidden fixed left-0 inset-y-0 pt-16 z-40 w-16 overflow-y-auto bg-transparent border-0 shadow-none"
       >
-        <div className="flex flex-col items-stretch gap-2.5 py-3 px-1">
+        <div className="flex flex-col items-stretch gap-4 py-4 px-1">
           <button
             type="button"
             onClick={() => setRailOpen((v) => !v)}
@@ -157,8 +157,8 @@ export const Layout = ({ children }: { children: ReactNode }) => {
             className="group relative flex flex-col items-center justify-center gap-1 px-0 py-1 rounded-xl text-[10px] font-semibold tracking-wide text-primary transition-all hover:text-foreground active:scale-95"
             title="Menu"
           >
-            <span className="relative grid place-items-center h-11 w-11 rounded-xl bg-gradient-to-br from-primary/25 to-primary/5 shadow-[0_0_18px_-4px_rgba(212,175,55,0.55)]">
-              <SettingsIcon className={`h-[22px] w-[22px] transition-transform ${railOpen ? "rotate-180" : ""}`} />
+            <span className="relative grid place-items-center h-[52px] w-[52px] rounded-xl bg-gradient-to-br from-primary/25 to-primary/5 shadow-[0_0_18px_-4px_rgba(212,175,55,0.55)]">
+              <SettingsIcon className={`h-7 w-7 transition-transform ${railOpen ? "rotate-180" : ""}`} />
             </span>
             <span className="leading-none text-[9px]">{railOpen ? "Less" : "More"}</span>
           </button>
@@ -190,7 +190,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 function SiteFooter() {
   const [s, setS] = useState<any>(null);
   const [open, setOpen] = useState<"terms" | "about" | null>(null);
-  useEffect(() => { supabase.from("app_settings").select("*").eq("id", 1).maybeSingle().then(({ data }) => setS(data)); }, []);
+  useEffect(() => {
+    supabase.from("app_settings")
+      .select("site_name,about_us,why_trust_us,terms_content,contact_email,contact_phone,contact_whatsapp")
+      .eq("id", 1).maybeSingle().then(({ data }) => setS(data));
+  }, []);
   return (
     <footer className="border-t border-border mt-20 backdrop-blur-xl bg-card/40 lg:pl-0 pl-16">
       <div className="container mx-auto px-4 py-10 grid md:grid-cols-3 gap-6 text-sm">
@@ -237,8 +241,8 @@ function MobLink({ to, icon: Icon, label, badge }: { to: string; icon: any; labe
       title={label}
     >
       <span className="pointer-events-none absolute left-0 inset-y-2 w-[2px] rounded-full bg-gradient-to-b from-transparent via-primary to-transparent opacity-0 group-[.active]:opacity-100 transition-opacity" />
-      <span className="relative grid place-items-center h-11 w-11 rounded-xl transition-all group-[.active]:bg-gradient-to-br group-[.active]:from-primary/25 group-[.active]:to-primary/5 group-[.active]:shadow-[0_0_18px_-4px_rgba(212,175,55,0.55)]">
-        <Icon className="h-[22px] w-[22px] transition-transform group-[.active]:scale-110" />
+      <span className="relative grid place-items-center h-[52px] w-[52px] rounded-xl transition-all group-[.active]:bg-gradient-to-br group-[.active]:from-primary/25 group-[.active]:to-primary/5 group-[.active]:shadow-[0_0_18px_-4px_rgba(212,175,55,0.55)]">
+        <Icon className="h-7 w-7 transition-transform group-[.active]:scale-110" />
         {badge && badge > 0 ? (
           <span className="absolute -top-0.5 -right-0.5 h-4 min-w-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-black grid place-items-center ring-2 ring-card animate-pulse">
             {badge > 9 ? "9+" : badge}

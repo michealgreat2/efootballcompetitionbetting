@@ -48,9 +48,12 @@ function Index() {
   const [matches, setMatches] = useState<MatchRow[]>([]);
   const [settings, setSettings] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [userCount, setUserCount] = useState<number | null>(null);
 
   useEffect(() => {
     Promise.all([fetchMatches(), fetchSettings()]).then(([m, s]) => { setMatches(m); setSettings(s); }).finally(() => setLoading(false));
+    supabase.from("profiles").select("id", { count: "exact", head: true })
+      .then(({ count }) => setUserCount(count ?? 0));
     const ch = supabase.channel("home-feed")
       .on("postgres_changes", { event: "*", schema: "public", table: "matches" }, () => fetchMatches().then(setMatches))
       .on("postgres_changes", { event: "*", schema: "public", table: "odds" }, () => fetchMatches().then(setMatches))
@@ -77,6 +80,8 @@ function Index() {
   }
   const categoryGroups = Object.entries(byCategory);
   const tagline = settings?.hero_tagline || "Season 4 · Live";
+  // Fudged community size — always reads "500+" at minimum, never an exact figure.
+  const fudgedUsers = (userCount ?? 0) + 500;
 
   return (
     <Layout>
@@ -102,13 +107,19 @@ function Index() {
           <Badge variant="outline" className="border-primary/50 text-primary mb-4">
             <Flame className="h-3 w-3 mr-1" /> {tagline}
           </Badge>
-          <h1 className="text-4xl md:text-7xl font-bold leading-tight max-w-3xl">
-            Where gangs clash and{" "}
-            <span className="gradient-gold-text">legends</span> are{" "}
-            <span className="gradient-emerald-text">gold-plated</span>.
-          </h1>
+          {settings?.hero_title ? (
+            <h1 className="text-4xl md:text-7xl font-bold leading-tight max-w-3xl uppercase gradient-gold-text">
+              {settings.hero_title}
+            </h1>
+          ) : (
+            <h1 className="text-4xl md:text-7xl font-bold leading-tight max-w-3xl uppercase">
+              Where gangs clash and{" "}
+              <span className="gradient-gold-text">legends</span> are{" "}
+              <span className="gradient-emerald-text">gold-plated</span>.
+            </h1>
+          )}
           <p className="mt-5 max-w-xl text-lg text-muted-foreground">
-            The Lomita Shooters League is a virtual-token competitive shooting circuit. Pick your gang, place your wagers, and climb the leaderboard.
+            {settings?.hero_subtitle || "The Lomita Shooters League is a virtual-token competitive shooting circuit. Pick your gang, place your wagers, and climb the leaderboard."}
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <Link to="/matches"><Button size="lg" className="btn-luxury">View Matches <ChevronRight className="h-4 w-4 ml-1" /></Button></Link>
@@ -199,6 +210,25 @@ function Index() {
             </div>
           ))}
         </div>
+      </section>
+
+      {/* Fudged global community counter — sits below the matches feed. */}
+      <section className="container mt-12">
+        <Card className="glass-strong relative overflow-hidden border-primary/30 p-8 md:p-10 text-center">
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-accent/10 pointer-events-none" />
+          <div className="relative">
+            <div className="flex items-center justify-center gap-2 text-primary">
+              <Skull className="h-5 w-5" />
+              <span className="text-xs uppercase tracking-[0.32em] font-bold">The League is growing</span>
+            </div>
+            <div className="mt-3 text-5xl md:text-7xl font-black gradient-gold-text tabular-nums">
+              {fudgedUsers.toLocaleString()}+
+            </div>
+            <div className="mt-2 text-sm md:text-base text-muted-foreground font-semibold uppercase tracking-widest">
+              Shooters worldwide
+            </div>
+          </div>
+        </Card>
       </section>
 
     </Layout>

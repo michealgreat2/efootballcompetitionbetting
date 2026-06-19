@@ -3016,7 +3016,7 @@ function AnalyticsPanel() {
 
       const { data: aud } = await supabase.from("audit_logs").select("action,target_type,created_at,metadata").order("created_at", { ascending: false }).limit(6);
       setActivity(aud ?? []);
-      const { data: hl } = await supabase.from("highlights").select("id,title,media_url,media_type,created_at").eq("is_active", true).order("created_at", { ascending: false }).limit(4);
+      const { data: hl } = await supabase.from("highlights").select("id,title,media_url,media_type,created_at,likes,dislikes").eq("is_active", true).order("created_at", { ascending: false }).limit(4);
       setHighlights(hl ?? []);
     })();
   }, []);
@@ -3144,7 +3144,7 @@ function AnalyticsPanel() {
 
       {/* ROW 7 — Recent Activity | Live Gang Wars + Event Countdown | Highlights Hub */}
       <div className="grid grid-cols-[1.15fr_0.9fr_1.35fr] gap-3">
-        <PanelBlock title="RECENT ACTIVITY" accent="sky" onView={() => setActiveTabFromAnalytics(nav, "activity")}>
+        <PanelBlock title="RECENT ACTIVITY" accent="sky" count={activity.length} hideWhenEmpty onView={() => setActiveTabFromAnalytics(nav, "activity")}>
           {activity.length === 0 && <div className="text-[10px] text-muted-foreground">No activity yet</div>}
           {activity.slice(0, 5).map((a, i) => (
             <button key={i} onClick={() => setActiveTabFromAnalytics(nav, "audit")} className="w-full text-left flex items-start gap-1.5 text-[9px] sm:text-xs py-1 border-b border-border/40 last:border-0 hover:bg-sky-500/10 rounded transition">
@@ -3157,7 +3157,7 @@ function AnalyticsPanel() {
           ))}
         </PanelBlock>
         <div className="space-y-3">
-          <PanelBlock title="LIVE GANG WARS" accent="rose" compact onView={() => nav({ to: "/matches" })}>
+          <PanelBlock title="LIVE GANG WARS" accent="rose" compact count={liveMatches.length} hideWhenEmpty onView={() => nav({ to: "/matches" })}>
             {liveMatches.length === 0 && <div className="text-[10px] text-muted-foreground">No live wars</div>}
             {liveMatches.slice(0, 2).map((m: any) => {
               const home = m.home_team; const away = m.away_team;
@@ -3171,7 +3171,7 @@ function AnalyticsPanel() {
               );
             })}
           </PanelBlock>
-          <PanelBlock title="EVENT COUNTDOWN" compact onView={() => setActiveTabFromAnalytics(nav, "events")}>
+          <PanelBlock title="EVENT COUNTDOWN" compact count={event ? 1 : 0} hideWhenEmpty onView={() => setActiveTabFromAnalytics(nav, "events")}>
             {event ? (
               <button onClick={() => setActiveTabFromAnalytics(nav, "events")} className="relative w-full min-h-24 text-left rounded-lg p-2 transition space-y-1 overflow-hidden border border-primary/20 bg-card/50">
                 {event.banner_url ? <img src={event.banner_url} alt="" className="absolute inset-0 h-full w-full object-cover opacity-70" /> : <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20" />}
@@ -3183,12 +3183,14 @@ function AnalyticsPanel() {
             ) : <div className="text-[10px] text-muted-foreground">No active event</div>}
           </PanelBlock>
         </div>
-        <PanelBlock title="HIGHLIGHTS HUB" accent="violet" onView={() => setActiveTabFromAnalytics(nav, "content")}>
+        <PanelBlock title="HIGHLIGHTS HUB" accent="violet" count={highlights.length} hideWhenEmpty onView={() => setActiveTabFromAnalytics(nav, "content")}>
           {highlights.length === 0 && <div className="text-[10px] text-muted-foreground">No highlights yet</div>}
           {highlights.slice(0, 4).map((h) => (
             <button key={h.id} onClick={() => setActiveTabFromAnalytics(nav, "content")} className="w-full flex items-center gap-1.5 text-[9px] sm:text-xs py-1 border-b border-border/40 last:border-0 hover:bg-violet-500/10 rounded px-1 transition">
               {h.media_type === "video" ? <Play className="h-3 w-3 text-violet-400 shrink-0" /> : <ImageIcon className="h-3 w-3 text-violet-400 shrink-0" />}
               <div className="min-w-0 flex-1 truncate text-left">{h.title}</div>
+              <span className="flex items-center gap-0.5 text-emerald-300 shrink-0"><ThumbsUp className="h-3 w-3" />{h.likes ?? 0}</span>
+              <span className="flex items-center gap-0.5 text-destructive shrink-0"><ThumbsDown className="h-3 w-3" />{h.dislikes ?? 0}</span>
             </button>
           ))}
         </PanelBlock>
@@ -3196,7 +3198,7 @@ function AnalyticsPanel() {
 
       {/* ROW 8 — Broadcast Center | Quick Actions | Top Bets */}
       <div className="grid grid-cols-3 gap-2 sm:gap-3">
-        <PanelBlock title="BROADCAST CENTER" compact onView={() => setActiveTabFromAnalytics(nav, "broadcast")}>
+        <PanelBlock title="BROADCAST CENTER" compact count={broadcasts.length} hideWhenEmpty onView={() => setActiveTabFromAnalytics(nav, "broadcast")}>
           {broadcasts.length === 0 && <div className="text-[10px] text-muted-foreground">No broadcasts</div>}
           {broadcasts.map((b) => (
             <button key={b.id} onClick={() => setActiveTabFromAnalytics(nav, "broadcast")} className="w-full text-left text-[9px] sm:text-xs py-1 border-b border-primary/10 last:border-0 hover:bg-primary/5 rounded px-1 transition">
@@ -3414,7 +3416,7 @@ function MetricSquare({ icon: Icon, value, title, sub, tone, compact, onClick }:
   );
 }
 
-function PanelBlock({ title, onView, children, accent, compact }: { title: string; onView?: () => void; children: React.ReactNode; accent?: "sky" | "rose" | "violet" | "amber" | "emerald"; compact?: boolean }) {
+function PanelBlock({ title, onView, children, accent, compact, count, hideWhenEmpty }: { title: string; onView?: () => void; children: React.ReactNode; accent?: "sky" | "rose" | "violet" | "amber" | "emerald"; compact?: boolean; count?: number; hideWhenEmpty?: boolean }) {
   const accents: Record<string, { ring: string; title: string; link: string; glow: string }> = {
     sky:     { ring: "border-sky-500/30",     title: "text-sky-300",     link: "text-sky-300/80 hover:text-sky-200",     glow: "shadow-[0_0_30px_-12px_rgba(56,189,248,0.5)]" },
     rose:    { ring: "border-rose-500/30",    title: "text-rose-300",    link: "text-rose-300/80 hover:text-rose-200",    glow: "shadow-[0_0_30px_-12px_rgba(244,63,94,0.5)]" },
@@ -3424,10 +3426,20 @@ function PanelBlock({ title, onView, children, accent, compact }: { title: strin
     primary: { ring: "border-primary/20",     title: "text-primary",     link: "text-primary/70 hover:text-primary",     glow: "" },
   };
   const a = accents[accent ?? "primary"];
+  // Sections that track live interactions are only shown when there is something to show.
+  if (hideWhenEmpty && (count ?? 0) <= 0) return null;
   return (
     <Card className={`bg-card/60 p-2 sm:p-3 flex flex-col ${compact ? "min-h-0 max-h-[170px]" : "min-h-[140px]"} ${a.ring} ${a.glow}`}>
       <div className="relative flex items-center justify-between mb-1.5">
-        <div className={`text-[8px] sm:text-[11px] font-bold tracking-widest ${a.title}`}>{title}</div>
+        <div className={`flex items-center gap-1.5 text-[8px] sm:text-[11px] font-bold tracking-widest ${a.title}`}>
+          {title}
+          {(count ?? 0) > 0 && (
+            <span className="relative flex items-center gap-1 rounded-full bg-destructive/90 text-destructive-foreground px-1.5 py-px text-[7px] sm:text-[8px] font-black tracking-wider">
+              <span className="absolute -left-1 -top-1 h-2 w-2 rounded-full bg-destructive animate-ping" />
+              NEW {count}
+            </span>
+          )}
+        </div>
         {onView && (
           <button onClick={onView} className={`text-[7px] sm:text-[9px] ${a.link}`}>View all</button>
         )}
@@ -3514,6 +3526,13 @@ function SettingsPanel() {
 
       <SettingsSection icon={Sparkles} title="Brand" subtitle="Tagline shown across landing surfaces.">
         <FieldLuxe label="Hero tagline"><Input value={s.hero_tagline ?? ""} onChange={(e) => setS({ ...s, hero_tagline: e.target.value })} placeholder="Season 4 · Live" /></FieldLuxe>
+        <FieldLuxe label="Home headline (big colorful text — shown in CAPITALS)">
+          <Textarea rows={2} value={s.hero_title ?? ""} onChange={(e) => setS({ ...s, hero_title: e.target.value })} placeholder="Where gangs clash and legends are gold-plated." />
+        </FieldLuxe>
+        <FieldLuxe label="Home sub-text (small paragraph below the headline)">
+          <Textarea rows={3} value={s.hero_subtitle ?? ""} onChange={(e) => setS({ ...s, hero_subtitle: e.target.value })} placeholder="The Lomita Shooters League is a virtual-token competitive shooting circuit…" />
+        </FieldLuxe>
+        <p className="text-[10px] text-muted-foreground">Leave blank to keep the default styled headline. Custom headlines are automatically shown in gold capitals.</p>
       </SettingsSection>
 
       <SettingsSection icon={MessageSquare} title="Contact" subtitle="Public-facing contact channels.">
@@ -3536,6 +3555,7 @@ function SettingsPanel() {
               <SelectItem value="medium">Medium</SelectItem>
               <SelectItem value="large">Large</SelectItem>
               <SelectItem value="xl">Extra Large</SelectItem>
+              <SelectItem value="full">Full screen (covers home page)</SelectItem>
             </SelectContent>
           </Select>
         </FieldLuxe>
