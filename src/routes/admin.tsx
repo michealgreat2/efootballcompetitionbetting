@@ -3416,7 +3416,7 @@ function MetricSquare({ icon: Icon, value, title, sub, tone, compact, onClick }:
   );
 }
 
-function PanelBlock({ title, onView, children, accent, compact }: { title: string; onView?: () => void; children: React.ReactNode; accent?: "sky" | "rose" | "violet" | "amber" | "emerald"; compact?: boolean }) {
+function PanelBlock({ title, onView, children, accent, compact, count, hideWhenEmpty }: { title: string; onView?: () => void; children: React.ReactNode; accent?: "sky" | "rose" | "violet" | "amber" | "emerald"; compact?: boolean; count?: number; hideWhenEmpty?: boolean }) {
   const accents: Record<string, { ring: string; title: string; link: string; glow: string }> = {
     sky:     { ring: "border-sky-500/30",     title: "text-sky-300",     link: "text-sky-300/80 hover:text-sky-200",     glow: "shadow-[0_0_30px_-12px_rgba(56,189,248,0.5)]" },
     rose:    { ring: "border-rose-500/30",    title: "text-rose-300",    link: "text-rose-300/80 hover:text-rose-200",    glow: "shadow-[0_0_30px_-12px_rgba(244,63,94,0.5)]" },
@@ -3426,10 +3426,20 @@ function PanelBlock({ title, onView, children, accent, compact }: { title: strin
     primary: { ring: "border-primary/20",     title: "text-primary",     link: "text-primary/70 hover:text-primary",     glow: "" },
   };
   const a = accents[accent ?? "primary"];
+  // Sections that track live interactions are only shown when there is something to show.
+  if (hideWhenEmpty && (count ?? 0) <= 0) return null;
   return (
     <Card className={`bg-card/60 p-2 sm:p-3 flex flex-col ${compact ? "min-h-0 max-h-[170px]" : "min-h-[140px]"} ${a.ring} ${a.glow}`}>
       <div className="relative flex items-center justify-between mb-1.5">
-        <div className={`text-[8px] sm:text-[11px] font-bold tracking-widest ${a.title}`}>{title}</div>
+        <div className={`flex items-center gap-1.5 text-[8px] sm:text-[11px] font-bold tracking-widest ${a.title}`}>
+          {title}
+          {(count ?? 0) > 0 && (
+            <span className="relative flex items-center gap-1 rounded-full bg-destructive/90 text-destructive-foreground px-1.5 py-px text-[7px] sm:text-[8px] font-black tracking-wider">
+              <span className="absolute -left-1 -top-1 h-2 w-2 rounded-full bg-destructive animate-ping" />
+              NEW {count}
+            </span>
+          )}
+        </div>
         {onView && (
           <button onClick={onView} className={`text-[7px] sm:text-[9px] ${a.link}`}>View all</button>
         )}
