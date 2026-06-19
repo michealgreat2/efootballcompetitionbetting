@@ -148,7 +148,7 @@ export const Layout = ({ children }: { children: ReactNode }) => {
       <nav
         className="lg:hidden fixed left-0 inset-y-0 pt-16 z-40 w-16 overflow-y-auto bg-transparent border-0 shadow-none"
       >
-        <div className="flex flex-col items-stretch gap-2.5 py-3 px-1">
+        <div className="flex flex-col items-stretch gap-4 py-4 px-1">
           <button
             type="button"
             onClick={() => setRailOpen((v) => !v)}
@@ -157,8 +157,8 @@ export const Layout = ({ children }: { children: ReactNode }) => {
             className="group relative flex flex-col items-center justify-center gap-1 px-0 py-1 rounded-xl text-[10px] font-semibold tracking-wide text-primary transition-all hover:text-foreground active:scale-95"
             title="Menu"
           >
-            <span className="relative grid place-items-center h-11 w-11 rounded-xl bg-gradient-to-br from-primary/25 to-primary/5 shadow-[0_0_18px_-4px_rgba(212,175,55,0.55)]">
-              <SettingsIcon className={`h-[22px] w-[22px] transition-transform ${railOpen ? "rotate-180" : ""}`} />
+            <span className="relative grid place-items-center h-13 w-13 min-h-[52px] min-w-[52px] rounded-xl bg-gradient-to-br from-primary/25 to-primary/5 shadow-[0_0_18px_-4px_rgba(212,175,55,0.55)]">
+              <SettingsIcon className={`h-7 w-7 transition-transform ${railOpen ? "rotate-180" : ""}`} />
             </span>
             <span className="leading-none text-[9px]">{railOpen ? "Less" : "More"}</span>
           </button>
