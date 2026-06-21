@@ -216,15 +216,6 @@ function Index() {
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex justify-between py-1.5 border-b border-border last:border-0 text-sm">
-      <span className="text-muted-foreground">{label}</span>
-      <span className="font-bold text-primary">{value}</span>
-    </div>
-  );
-}
-
 function FuturesSection({ title, markets, maxSelections, featured = [] }: { title: string; markets: MatchRow[]; maxSelections: number; featured?: MatchRow[] }) {
   const { selections, add, remove, setOpen } = useBetSlip();
   return (
