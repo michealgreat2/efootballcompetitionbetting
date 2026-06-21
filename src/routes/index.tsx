@@ -145,7 +145,9 @@ function Index() {
       <HighlightsRow />
       <AnnouncementSlider />
       <AdsRow />
-      <FuturesSection title={settings?.futures_section_title || "TOURNAMENT FUTURES"} markets={futures} maxSelections={Number(settings?.futures_max_selections ?? 1)} featured={featuredAll} />
+      {futures.length > 0 && (
+        <FuturesSection title={settings?.futures_section_title || "TOURNAMENT FUTURES"} markets={futures} maxSelections={Number(settings?.futures_max_selections ?? 1)} featured={featuredAll} />
+      )}
 
       <BookingCodeFab />
 
@@ -161,17 +163,7 @@ function Index() {
         </div>
       </section>
 
-      <section className="container mt-10 grid lg:grid-cols-[300px_1fr] gap-6">
-        <aside className="lg:sticky lg:top-20 self-start space-y-4 lg:order-first">
-          <Card className="glass p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Skull className="h-4 w-4 text-primary" />
-              <div className="font-bold tracking-widest text-sm">LEAGUE STATS</div>
-            </div>
-            <Stat label="Active matches" value={matches.filter((m) => m.status !== "ended").length.toString()} />
-            <Stat label="Live now" value={live.length.toString()} />
-          </Card>
-        </aside>
+      <section className="container mt-10">
         <div className="space-y-10">
           {loading && <p className="text-muted-foreground">Loading league…</p>}
           {!loading && featuredFallback.length > 0 && (
