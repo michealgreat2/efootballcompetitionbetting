@@ -336,6 +336,84 @@ function FutureEmblem({ label, url }: { label: string; url?: string | null }) {
   );
 }
 
+// Featured matches rendered as SportyBet-style golden rows inside the
+// Seasonal Tournament banner, under the "Go to Tournament" header.
+function FeaturedGoldenMatches({ matches }: { matches: MatchRow[] }) {
+  const { selections, add, remove, setOpen } = useBetSlip();
+  if (matches.length === 0) return null;
+  return (
+    <div className="relative mt-5 space-y-2.5">
+      <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] font-black text-amber-100">
+        <Flame className="h-3.5 w-3.5" /> Featured Matches
+      </div>
+      {matches.map((m) => {
+        const market = m.markets?.find((mk) => mk.is_open) ?? m.markets?.[0];
+        const odds = market?.odds ?? [];
+        const live = m.status === "live";
+        return (
+          <div key={m.id} className="rounded-2xl border border-amber-300/30 bg-black/35 backdrop-blur-sm overflow-hidden shadow-[0_8px_30px_-12px_rgba(0,0,0,0.7)]">
+            <div className="flex items-center justify-between gap-2 px-3 pt-2.5 text-[10px] uppercase tracking-widest">
+              <span className="inline-flex items-center gap-1.5 font-black text-amber-200">
+                {live ? (
+                  <><span className="relative flex h-1.5 w-1.5"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" /><span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-red-500" /></span> Live</>
+                ) : "Upcoming"}
+              </span>
+              <span className="font-mono text-amber-50/70">
+                {live ? "Round in play" : <>Starts in <Countdown target={m.start_time} /></>}
+              </span>
+            </div>
+            <Link to="/matches/$matchId" params={{ matchId: m.id }} className="flex items-center gap-3 px-3 py-2 hover:bg-amber-400/5 transition">
+              <TeamLogo name={m.home_team?.name} url={m.home_team?.logo_url} size={30} rounded="full" />
+              <div className="min-w-0 flex-1">
+                <div className="font-extrabold text-sm text-amber-50 leading-tight truncate uppercase">
+                  {m.home_team?.name ?? m.name}
+                  {m.away_team && <span className="text-amber-100/50 font-normal lowercase"> vs </span>}
+                  {m.away_team?.name}
+                </div>
+                <div className="text-[10px] text-amber-100/60 truncate">{market?.name ?? "Match winner"}</div>
+              </div>
+              {m.away_team && <TeamLogo name={m.away_team?.name} url={m.away_team?.logo_url} size={30} rounded="full" />}
+            </Link>
+            {odds.length > 0 && (
+              <div className="grid gap-px px-3 pb-3" style={{ gridTemplateColumns: `repeat(${Math.min(odds.length, 3)}, minmax(0,1fr))` }}>
+                {odds.slice(0, 3).map((o) => {
+                  const selected = selections.some((s) => s.odd_id === o.id);
+                  const blocked = !market?.is_open || m.status === "ended";
+                  return (
+                    <button
+                      key={o.id}
+                      disabled={blocked && !selected}
+                      onClick={() => {
+                        if (selected) { remove(o.id); return; }
+                        if (blocked) return;
+                        add({ match_id: m.id, match_name: m.name, market_id: market!.id, market_name: market!.name, odd_id: o.id, selection_label: o.label, odds: Number(o.value) });
+                        setOpen(true);
+                      }}
+                      className={`flex flex-col items-center justify-center gap-0.5 rounded-lg bg-black/40 py-2 px-1 transition hover:bg-amber-400/15 disabled:opacity-40 disabled:hover:bg-black/40 ${selected ? "ring-2 ring-amber-300 bg-amber-400/20" : "border border-amber-300/15"}`}
+                    >
+                      <span className="text-[9px] uppercase tracking-wider text-amber-100/70 truncate max-w-full">{o.label}</span>
+                      <span className="font-mono font-black text-amber-200">{Number(o.value).toFixed(2)}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function FutureEmblemUnused({ label, url }: { label: string; url?: string | null }) {
+  const initials = label.split(/\s+/).filter(Boolean).map((p) => p[0]).slice(0, 2).join("").toUpperCase() || "LS";
+  return (
+    <span className="h-10 w-10 shrink-0 rounded-full border border-primary/35 bg-primary/10 grid place-items-center overflow-hidden text-[11px] font-black text-primary">
+      {url ? <img src={url} alt="" className="h-full w-full object-cover" /> : initials}
+    </span>
+  );
+}
+
 function FutureProgress({ odd }: { odd: any }) {
   const progress = Array.isArray(odd.future_progress) ? odd.future_progress : [];
   const status = odd.future_status ?? "active";
