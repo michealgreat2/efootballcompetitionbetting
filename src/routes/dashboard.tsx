@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Ticket as TicketIcon, ChevronRight, Wallet, UserCog, CreditCard, Coins, Tag, Trophy, ListChecks, Sparkles, Lock, History as HistoryIcon } from "lucide-react";
+import { Ticket as TicketIcon, ChevronRight, Wallet, UserCog, CreditCard, Coins, Tag, Trophy, ListChecks, Sparkles, Lock, History as HistoryIcon, ArrowLeftRight } from "lucide-react";
 import { ChallengesPanel } from "@/components/ChallengesPanel";
 import { VipCard } from "@/components/UserHubSections";
 
@@ -30,10 +30,11 @@ export const Route = createFileRoute("/dashboard")({
 });
 
 function Dashboard() {
-  const { user, profile, roles } = useAuth();
+  const { user, profile, roles, refresh } = useAuth();
   const [bets, setBets] = useState<any[]>([]);
   const [withdrawals, setWithdrawals] = useState<any[]>([]);
   const [promoOpen, setPromoOpen] = useState(false);
+  const [transferOpen, setTransferOpen] = useState(false);
   const [betFilter, setBetFilter] = useState<string>("all");
   const [betSearch, setBetSearch] = useState("");
   const isSponsor = roles?.includes("sponsor") || roles?.includes("admin");
@@ -86,7 +87,7 @@ function Dashboard() {
           <PanelCard to="#bets" icon={TicketIcon} title="Bet Slips" subtitle={`${bets.length} total`} />
           <PanelCard to="/profile" icon={UserCog} title="Edit Profile" subtitle="Update details" />
           <PanelCard to="/withdraw" icon={Wallet} title="Withdrawal" subtitle="Cash out tokens" />
-          <PanelCard icon={CreditCard} title="Deposit" subtitle="Coming soon" comingSoon />
+          <PanelCard onClick={() => setTransferOpen(true)} icon={ArrowLeftRight} title="Transfer Tokens" subtitle="Send to a user ID" />
           <PanelCard to="/checkout" icon={Coins} title="Request Tokens" subtitle="Top up balance" />
           {isSponsor && (
             <PanelCard onClick={() => setPromoOpen(true)} icon={Tag} title="Promo Codes" subtitle="Sponsor only" gold />
@@ -215,6 +216,7 @@ function Dashboard() {
         </div>
       </div>
       <PromoRequestDialog open={promoOpen} onClose={() => setPromoOpen(false)} userId={user.id} />
+      <TransferDialog open={transferOpen} onClose={() => setTransferOpen(false)} onDone={refresh} />
     </Layout>
   );
 }
