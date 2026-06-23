@@ -72,7 +72,7 @@ export function LotteryAdminPanel() {
   }
 
   async function deleteDraw(id: string) {
-    if (!(await confirm({ title: "Delete draw?", description: "This removes the draw and all its tickets.", confirmText: "Delete", destructive: true }))) return;
+    if (!(await confirm({ title: "Delete draw?", description: "This removes the draw and all its tickets.", confirmText: "Delete", tone: "danger" }))) return;
     const { error } = await supabase.from("lottery_draws").delete().eq("id", id);
     if (error) return toast.error(error.message);
     toast.success("Draw deleted");
