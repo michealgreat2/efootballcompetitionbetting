@@ -194,6 +194,7 @@ export function AdminPage() {
             <TabsContent value="withdrawals" className="mt-4"><WithdrawalsPanel /></TabsContent>
             <TabsContent value="housewallet" className="mt-4"><HouseWalletPanel /></TabsContent>
             <TabsContent value="leaderboard" className="mt-4"><LeaderboardAdminPanel /></TabsContent>
+            <TabsContent value="lottery" className="mt-4"><LotteryAdminPanel /></TabsContent>
             <TabsContent value="promos" className="mt-4"><PromoPanel /></TabsContent>
             <TabsContent value="content" className="mt-4"><ContentPanel /></TabsContent>
             <TabsContent value="tickets" className="mt-4"><TicketsPanel /></TabsContent>
