@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Ticket as TicketIcon, ChevronRight, Wallet, UserCog, CreditCard, Coins, Tag, Trophy, ListChecks, Sparkles, Lock, History as HistoryIcon, ArrowLeftRight } from "lucide-react";
+import { Ticket as TicketIcon, ChevronRight, Wallet, UserCog, CreditCard, Coins, Tag, Trophy, ListChecks, Sparkles, Lock, History as HistoryIcon, ArrowLeftRight, Gift, Receipt } from "lucide-react";
 import { ChallengesPanel } from "@/components/ChallengesPanel";
 import { VipCard } from "@/components/UserHubSections";
 
