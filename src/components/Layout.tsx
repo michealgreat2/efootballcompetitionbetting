@@ -167,6 +167,7 @@ export const Layout = ({ children }: { children: ReactNode }) => {
       <main className="relative lg:pl-0 pl-16 overflow-x-hidden">{children}</main>
       <LevelUpModal />
       <GlobalWinAnimation />
+      <BetSuccessPopout />
       <nav
         className="lg:hidden fixed left-0 inset-y-0 pt-16 z-40 w-16 overflow-y-auto bg-transparent border-0 shadow-none"
       >
