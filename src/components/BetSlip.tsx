@@ -12,6 +12,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Ticket, X, Trash2, Coins, CheckCircle2, Copy, Share2, ExternalLink, Gem, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { DraggableFab } from "@/components/DraggableFab";
+import { showBetSuccess } from "@/components/BetSuccessPopout";
 
 export function BetSlipFab() {
   const { selections, open, setOpen } = useBetSlip();
