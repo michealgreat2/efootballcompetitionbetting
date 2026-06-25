@@ -222,35 +222,38 @@
 @layer utilities {
   .voucher-bg {
     background:
-      radial-gradient(ellipse at top left, oklch(0.55 0.18 152 / 0.42), transparent 58%),
-      radial-gradient(ellipse at bottom right, oklch(0.42 0.15 158 / 0.40), transparent 62%),
-      radial-gradient(ellipse at center, oklch(0.30 0.10 158 / 0.30), transparent 70%),
-      linear-gradient(165deg, oklch(0.20 0.07 158) 0%, oklch(0.16 0.06 156) 45%, oklch(0.12 0.05 158) 78%, oklch(0.09 0.04 158) 100%);
-    backdrop-filter: blur(18px) saturate(170%);
+      radial-gradient(ellipse at top left, oklch(0.40 0.13 152 / 0.55), transparent 60%),
+      radial-gradient(ellipse at bottom right, oklch(0.42 0.11 78 / 0.45), transparent 64%),
+      radial-gradient(ellipse at center, oklch(0.22 0.08 158 / 0.40), transparent 72%),
+      linear-gradient(160deg,
+        oklch(0.18 0.07 158) 0%,
+        oklch(0.15 0.06 156) 38%,
+        oklch(0.16 0.06 110) 62%,
+        oklch(0.18 0.07 78) 85%,
+        oklch(0.13 0.06 70) 100%);
+    backdrop-filter: blur(22px) saturate(180%);
   }
   .voucher-frame {
+    border-radius: 32px;
     box-shadow:
-      0 0 0 1.5px oklch(0.85 0.22 152 / 0.75),
-      0 0 0 4px oklch(0.10 0.04 158 / 0.95),
-      0 0 0 5px oklch(0.62 0.18 152 / 0.55),
-      0 14px 28px -8px oklch(0 0 0 / 0.8),
-      0 28px 60px -14px oklch(0 0 0 / 0.7),
-      0 0 30px -2px oklch(0.85 0.22 152 / 0.55),
-      0 0 80px -8px oklch(0.62 0.20 152 / 0.45),
-      inset 0 2px 0 oklch(0.95 0.16 152 / 0.20),
-      inset 0 -4px 0 oklch(0 0 0 / 0.7),
-      inset 8px 0 16px -10px oklch(0.90 0.18 152 / 0.18),
-      inset -8px 0 16px -10px oklch(0 0 0 / 0.55);
+      0 0 0 2px oklch(0.85 0.22 152 / 0.80),
+      0 0 0 5px oklch(0.10 0.04 158 / 0.95),
+      0 0 0 8px oklch(0.62 0.15 82 / 0.70),
+      0 0 0 10px oklch(0.45 0.12 80 / 0.55),
+      0 18px 34px -8px oklch(0 0 0 / 0.85),
+      0 34px 70px -14px oklch(0 0 0 / 0.75),
+      0 0 34px -2px oklch(0.85 0.22 152 / 0.55),
+      0 0 90px -8px oklch(0.60 0.16 82 / 0.45),
+      inset 0 3px 0 oklch(0.95 0.16 152 / 0.22),
+      inset 0 -5px 0 oklch(0 0 0 / 0.75),
+      inset 10px 0 18px -10px oklch(0.90 0.18 152 / 0.20),
+      inset -10px 0 18px -10px oklch(0.62 0.15 82 / 0.20);
     transition: transform .4s ease, box-shadow .4s ease;
   }
   .voucher-circuit {
-    background-image:
-      linear-gradient(oklch(0.82 0.20 152 / 0.16) 1px, transparent 1px),
-      linear-gradient(90deg, oklch(0.82 0.20 152 / 0.16) 1px, transparent 1px),
-      radial-gradient(circle, oklch(0.85 0.22 152 / 0.32) 1.6px, transparent 1.7px);
-    background-size: 32px 32px, 32px 32px, 64px 64px;
-    background-position: 0 0, 0 0, 16px 16px;
-    opacity: 0.22;
+    /* Sketch/grid lines removed per design request */
+    background-image: none;
+    opacity: 0;
   }
   .voucher-inner {
     background: linear-gradient(180deg, oklch(0.24 0.07 158 / 0.55), oklch(0.15 0.05 158 / 0.78));
