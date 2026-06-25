@@ -566,6 +566,16 @@ function UsersPanel() {
                     {!u.is_banned && !u.is_muted && !u.is_restricted && <span className="badge-won text-[9px] px-1.5 py-0.5 rounded-full font-bold">ACTIVE</span>}
                   </div>
                   <div className="text-[11px] text-muted-foreground truncate">{u.email}</div>
+                  {u.special_id && (
+                    <button
+                      type="button"
+                      onClick={() => { navigator.clipboard?.writeText(u.special_id); toast.success(`Copied ID ${u.special_id}`); }}
+                      className="mt-0.5 inline-flex items-center gap-1 text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-md border border-primary/40 text-primary bg-primary/10 hover:bg-primary/20 transition"
+                      title="Click to copy unique ID"
+                    >
+                      🆔 {u.special_id}
+                    </button>
+                  )}
                   {u.phone && <div className="text-[10px] text-muted-foreground truncate">📞 {u.phone}</div>}
                   {(u.discord_username || u.discord_full_name) && (
                     <div className="text-[10px] text-[#5865F2] truncate" title="Discord">
