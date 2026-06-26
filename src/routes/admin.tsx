@@ -50,6 +50,7 @@ import { ImageSettingControl } from "@/components/admin/ImageSettingControl";
 import { ClansAdminPanel } from "@/components/admin/ClansAdminPanel";
 import { LotteryAdminPanel } from "@/components/admin/LotteryAdminPanel";
 import { GiftsSpinAdminPanel } from "@/components/admin/GiftsSpinAdminPanel";
+import { SurveysAdminPanel } from "@/components/admin/SurveysAdminPanel";
 import { TopBetsPanel } from "@/components/admin/TopBetsPanel";
 import { TournamentAdminPanel } from "@/components/admin/TournamentAdminPanel";
 import { seedLegacyUsers } from "@/lib/seed-users.functions";
@@ -201,6 +202,7 @@ export function AdminPage() {
             <TabsContent value="content" className="mt-4"><ContentPanel /></TabsContent>
             <TabsContent value="tickets" className="mt-4"><TicketsPanel /></TabsContent>
             <TabsContent value="tasks" className="mt-4"><TasksAchievementsPanel /></TabsContent>
+            <TabsContent value="surveys" className="mt-4"><SurveysAdminPanel /></TabsContent>
             <TabsContent value="challenges" className="mt-4"><ChallengesAdminPanel /></TabsContent>
             <TabsContent value="seasons" className="mt-4"><SeasonsAdminPanel /></TabsContent>
             <TabsContent value="bettracker" className="mt-4"><BetTrackerPanel /></TabsContent>
@@ -3290,6 +3292,9 @@ const QUICK_ACTIONS: { i: any; l: string; t: string }[] = [
   { i: Trophy, l: "Emblems", t: "emblems" },
   { i: Calendar, l: "Events", t: "events" },
   { i: Wallet, l: "House Wallet", t: "housewallet" },
+  { i: Gift, l: "Gifts & Spin", t: "giftsspin" },
+  { i: Dice5, l: "Lottery", t: "lottery" },
+  { i: ClipboardList, l: "Surveys", t: "surveys" },
   { i: ListOrdered, l: "Leaderboard", t: "leaderboard" },
   { i: Trophy, l: "Matches", t: "matches" },
   { i: Send, l: "Notify", t: "notify" },
