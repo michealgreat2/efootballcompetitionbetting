@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { LogOut, User as UserIcon, Shield, MessageSquare, Home, Trophy, Ticket, LifeBuoy, Wallet, Crosshair as MatchIcon, Settings as SettingsIcon, Coins, LayoutDashboard, Dice5, Swords, Clover } from "lucide-react";
+import { LogOut, User as UserIcon, Shield, MessageSquare, Home, Trophy, Ticket, LifeBuoy, Wallet, Crosshair as MatchIcon, Settings as SettingsIcon, Coins, LayoutDashboard, Dice5, Swords, Clover, ClipboardList, ListChecks } from "lucide-react";
 import { GangLogo } from "@/components/GangLogo";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +8,7 @@ import { NotificationBell } from "@/components/NotificationBell";
 import { LevelUpModal } from "@/components/Spotlight";
 import { GlobalWinAnimation } from "@/components/GlobalWinAnimation";
 import { BetSuccessPopout } from "@/components/BetSuccessPopout";
+import { SurveyPopout } from "@/components/SurveyPopout";
 import { ReactNode, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLocation } from "@tanstack/react-router";
@@ -125,6 +126,8 @@ export const Layout = ({ children }: { children: ReactNode }) => {
             <NavLink to="/leaderboard" icon={Trophy} label="Leaderboard" />
             <NavLink to="/tournament" icon={Swords} label="Tournament" />
             {user && <NavLink to="/dashboard" icon={LayoutDashboard} label="Dashboard" />}
+            {user && <NavLink to="/tasks" icon={ListChecks} label="Tasks" />}
+            {user && <NavLink to="/surveys" icon={ClipboardList} label="Surveys" />}
             {user && <NavLink to="/checkout" icon={Coins} label="Buy" />}
             {user && <NavLink to="/withdraw" icon={Wallet} label="Withdraw" />}
             {user && <NavLink to="/support" icon={LifeBuoy} label="Support" />}
@@ -168,6 +171,7 @@ export const Layout = ({ children }: { children: ReactNode }) => {
       <LevelUpModal />
       <GlobalWinAnimation />
       <BetSuccessPopout />
+      <SurveyPopout />
       <nav
         className="lg:hidden fixed left-0 inset-y-0 pt-16 z-40 w-16 overflow-y-auto bg-transparent border-0 shadow-none"
       >
@@ -194,6 +198,8 @@ export const Layout = ({ children }: { children: ReactNode }) => {
           <MobLink to="/tournament" icon={Swords} label="Bracket" />
           {user && <>
             <MobLink to="/dashboard" icon={Ticket} label="ME" />
+            <MobLink to="/tasks" icon={ListChecks} label="Tasks" />
+            <MobLink to="/surveys" icon={ClipboardList} label="Surveys" />
             <MobLink to="/profile" icon={UserIcon} label="Profile" />
             <MobLink to="/settings" icon={SettingsIcon} label="Settings" />
             <MobLink to="/support" icon={LifeBuoy} label="Help" />

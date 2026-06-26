@@ -14,6 +14,7 @@ import { Route as WatchlistRouteImport } from './routes/watchlist'
 import { Route as VirtualRouteImport } from './routes/virtual'
 import { Route as TournamentRouteImport } from './routes/tournament'
 import { Route as TasksRouteImport } from './routes/tasks'
+import { Route as SurveysRouteImport } from './routes/surveys'
 import { Route as SupportRouteImport } from './routes/support'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SettingsRouteImport } from './routes/settings'
@@ -64,6 +65,11 @@ const TournamentRoute = TournamentRouteImport.update({
 const TasksRoute = TasksRouteImport.update({
   id: '/tasks',
   path: '/tasks',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SurveysRoute = SurveysRouteImport.update({
+  id: '/surveys',
+  path: '/surveys',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SupportRoute = SupportRouteImport.update({
@@ -219,6 +225,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/support': typeof SupportRoute
+  '/surveys': typeof SurveysRoute
   '/tasks': typeof TasksRoute
   '/tournament': typeof TournamentRoute
   '/virtual': typeof VirtualRouteWithChildren
@@ -252,6 +259,7 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/support': typeof SupportRoute
+  '/surveys': typeof SurveysRoute
   '/tasks': typeof TasksRoute
   '/tournament': typeof TournamentRoute
   '/virtual': typeof VirtualRouteWithChildren
@@ -286,6 +294,7 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/support': typeof SupportRoute
+  '/surveys': typeof SurveysRoute
   '/tasks': typeof TasksRoute
   '/tournament': typeof TournamentRoute
   '/virtual': typeof VirtualRouteWithChildren
@@ -321,6 +330,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/sitemap.xml'
     | '/support'
+    | '/surveys'
     | '/tasks'
     | '/tournament'
     | '/virtual'
@@ -354,6 +364,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/sitemap.xml'
     | '/support'
+    | '/surveys'
     | '/tasks'
     | '/tournament'
     | '/virtual'
@@ -387,6 +398,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/sitemap.xml'
     | '/support'
+    | '/surveys'
     | '/tasks'
     | '/tournament'
     | '/virtual'
@@ -421,6 +433,7 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SupportRoute: typeof SupportRoute
+  SurveysRoute: typeof SurveysRoute
   TasksRoute: typeof TasksRoute
   TournamentRoute: typeof TournamentRoute
   VirtualRoute: typeof VirtualRouteWithChildren
@@ -466,6 +479,13 @@ declare module '@tanstack/react-router' {
       path: '/tasks'
       fullPath: '/tasks'
       preLoaderRoute: typeof TasksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/surveys': {
+      id: '/surveys'
+      path: '/surveys'
+      fullPath: '/surveys'
+      preLoaderRoute: typeof SurveysRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/support': {
@@ -697,6 +717,7 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SupportRoute: SupportRoute,
+  SurveysRoute: SurveysRoute,
   TasksRoute: TasksRoute,
   TournamentRoute: TournamentRoute,
   VirtualRoute: VirtualRouteWithChildren,

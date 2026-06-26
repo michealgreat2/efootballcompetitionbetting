@@ -17,6 +17,7 @@ import {
   Shield, Users, Trophy, Coins, Megaphone, Settings as SettingsIcon, Ticket, AlertTriangle,
   Calendar, Tag, Image as ImageIcon, BarChart3, History, Send, Plus, Trash2, Pencil, ChevronRight, ChevronLeft, Wallet, ListOrdered, Sparkles, ClipboardList, Lock, Pause, Play, Check, X, MessageSquare, Eye, RotateCw, Copy, Globe, MapPin, Smartphone, Clock, Filter,
   Dice5, LogOut, Crosshair, Target, Flame, ThumbsUp, ThumbsDown,
+  Gift,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import lslLogo from "@/assets/lsl-logo.png";
@@ -50,6 +51,7 @@ import { ImageSettingControl } from "@/components/admin/ImageSettingControl";
 import { ClansAdminPanel } from "@/components/admin/ClansAdminPanel";
 import { LotteryAdminPanel } from "@/components/admin/LotteryAdminPanel";
 import { GiftsSpinAdminPanel } from "@/components/admin/GiftsSpinAdminPanel";
+import { SurveysAdminPanel } from "@/components/admin/SurveysAdminPanel";
 import { TopBetsPanel } from "@/components/admin/TopBetsPanel";
 import { TournamentAdminPanel } from "@/components/admin/TournamentAdminPanel";
 import { seedLegacyUsers } from "@/lib/seed-users.functions";
@@ -201,6 +203,7 @@ export function AdminPage() {
             <TabsContent value="content" className="mt-4"><ContentPanel /></TabsContent>
             <TabsContent value="tickets" className="mt-4"><TicketsPanel /></TabsContent>
             <TabsContent value="tasks" className="mt-4"><TasksAchievementsPanel /></TabsContent>
+            <TabsContent value="surveys" className="mt-4"><SurveysAdminPanel /></TabsContent>
             <TabsContent value="challenges" className="mt-4"><ChallengesAdminPanel /></TabsContent>
             <TabsContent value="seasons" className="mt-4"><SeasonsAdminPanel /></TabsContent>
             <TabsContent value="bettracker" className="mt-4"><BetTrackerPanel /></TabsContent>
@@ -3290,6 +3293,9 @@ const QUICK_ACTIONS: { i: any; l: string; t: string }[] = [
   { i: Trophy, l: "Emblems", t: "emblems" },
   { i: Calendar, l: "Events", t: "events" },
   { i: Wallet, l: "House Wallet", t: "housewallet" },
+  { i: Gift, l: "Gifts & Spin", t: "giftsspin" },
+  { i: Dice5, l: "Lottery", t: "lottery" },
+  { i: ClipboardList, l: "Surveys", t: "surveys" },
   { i: ListOrdered, l: "Leaderboard", t: "leaderboard" },
   { i: Trophy, l: "Matches", t: "matches" },
   { i: Send, l: "Notify", t: "notify" },
@@ -4145,10 +4151,36 @@ function BetTrackerPanel() {
 }
 
 function TasksAchievementsPanel() {
+  return <TasksAchievementsPanelInner />;
+}
+
+function TasksBackgroundControl() {
+  const [bg, setBg] = useState<{ url: string | null; fit: string; pos: string }>({ url: null, fit: "cover", pos: "center" });
+  const [saving, setSaving] = useState(false);
+  useEffect(() => {
+    supabase.from("app_settings").select("tasks_bg_url,tasks_bg_fit,tasks_bg_position").eq("id", 1).maybeSingle()
+      .then(({ data }) => { if (data) setBg({ url: (data as any).tasks_bg_url ?? null, fit: (data as any).tasks_bg_fit ?? "cover", pos: (data as any).tasks_bg_position ?? "center" }); });
+  }, []);
+  async function save() {
+    setSaving(true);
+    const { error } = await (supabase as any).from("app_settings").update({ tasks_bg_url: bg.url, tasks_bg_fit: bg.fit, tasks_bg_position: bg.pos }).eq("id", 1);
+    setSaving(false);
+    if (error) toast.error(error.message); else toast.success("Tasks page background saved");
+  }
+  return (
+    <Card className="glass p-4 space-y-3">
+      <div className="flex items-center gap-2 font-bold"><ImageIcon className="h-4 w-4 text-primary" />Tasks Page Background</div>
+      <ImageSettingControl label="Background image" value={bg.url} onChange={(url) => setBg((p) => ({ ...p, url }))} fit={bg.fit} onFitChange={(v) => setBg((p) => ({ ...p, fit: v }))} position={bg.pos} onPositionChange={(v) => setBg((p) => ({ ...p, pos: v }))} />
+      <Button variant="outline" onClick={save} disabled={saving}>{saving ? "Saving…" : "Save background"}</Button>
+    </Card>
+  );
+}
+
+function TasksAchievementsPanelInner() {
   const [users, setUsers] = useState<any[]>([]);
   const [tasks, setTasks] = useState<any[]>([]);
   const [achievements, setAchievements] = useState<any[]>([]);
-  const [draft, setDraft] = useState({ user_id: "", title: "", description: "", reward_tokens: 0 });
+  const [draft, setDraft] = useState({ user_id: "", title: "", description: "", reward_tokens: 0, reward_kind: "tokens", target_progress: 1, period: "once", ends_at: "", banner_url: "" });
   const [ach, setAch] = useState({ user_id: "", code: "", title: "", description: "", icon: "🏆" });
   async function load() {
     const [{ data: u }, { data: t }, { data: a }] = await Promise.all([
@@ -4161,8 +4193,22 @@ function TasksAchievementsPanel() {
   useEffect(() => { load(); }, []);
   async function createTask() {
     if (!draft.user_id || !draft.title) { toast.error("Pick a user and enter a task title"); return; }
-    const { error } = await supabase.from("user_tasks").insert({ user_id: draft.user_id, title: draft.title, description: draft.description || null, reward_tokens: draft.reward_tokens || 0 });
-    if (error) toast.error(error.message); else { toast.success("Task assigned"); setDraft({ user_id: "", title: "", description: "", reward_tokens: 0 }); load(); }
+    const rows = draft.user_id === "__all__"
+      ? users.map((u) => u.id)
+      : [draft.user_id];
+    const payload = rows.map((uid) => ({
+      user_id: uid,
+      title: draft.title,
+      description: draft.description || null,
+      reward_tokens: draft.reward_tokens || 0,
+      reward_kind: draft.reward_kind || "tokens",
+      target_progress: Math.max(1, draft.target_progress || 1),
+      period: draft.period || "once",
+      ends_at: draft.ends_at ? new Date(draft.ends_at).toISOString() : null,
+      banner_url: draft.banner_url || null,
+    }));
+    const { error } = await supabase.from("user_tasks").insert(payload);
+    if (error) toast.error(error.message); else { toast.success(`Task assigned to ${rows.length} user(s)`); setDraft({ user_id: "", title: "", description: "", reward_tokens: 0, reward_kind: "tokens", target_progress: 1, period: "once", ends_at: "", banner_url: "" }); load(); }
   }
   async function markDone(task: any) {
     await supabase.from("user_tasks").update({ status: "completed", completed_at: new Date().toISOString() }).eq("id", task.id);
@@ -4191,17 +4237,52 @@ function TasksAchievementsPanel() {
   }
   return (
     <div className="space-y-4">
+      <TasksBackgroundControl />
       <Card className="glass-strong p-4 space-y-3">
         <div className="flex items-center gap-2 font-bold"><ClipboardList className="h-4 w-4 text-primary" />User Tasks</div>
         <div className="grid md:grid-cols-4 gap-2">
           <Select value={draft.user_id} onValueChange={(v) => setDraft({ ...draft, user_id: v })}>
             <SelectTrigger><SelectValue placeholder="Assign to user" /></SelectTrigger>
-            <SelectContent>{users.map((u) => <SelectItem key={u.id} value={u.id}>{u.full_name || u.email}</SelectItem>)}</SelectContent>
+            <SelectContent><SelectItem value="__all__">★ All users</SelectItem>{users.map((u) => <SelectItem key={u.id} value={u.id}>{u.full_name || u.email}</SelectItem>)}</SelectContent>
           </Select>
           <Input placeholder="Task title" value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} />
           <Input placeholder="Description" value={draft.description} onChange={(e) => setDraft({ ...draft, description: e.target.value })} />
           <Input type="number" placeholder="Reward tokens" value={draft.reward_tokens || ""} onChange={(e) => setDraft({ ...draft, reward_tokens: Number(e.target.value) })} />
         </div>
+        <div className="grid md:grid-cols-4 gap-2">
+          <div>
+            <label className="text-[10px] uppercase tracking-widest text-muted-foreground">Reward kind</label>
+            <Select value={draft.reward_kind} onValueChange={(v) => setDraft({ ...draft, reward_kind: v })}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="tokens">Tokens</SelectItem>
+                <SelectItem value="cashback">Cash-back</SelectItem>
+                <SelectItem value="discount">Discount token</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <label className="text-[10px] uppercase tracking-widest text-muted-foreground">Target progress</label>
+            <Input type="number" min={1} value={draft.target_progress} onChange={(e) => setDraft({ ...draft, target_progress: Number(e.target.value) })} />
+          </div>
+          <div>
+            <label className="text-[10px] uppercase tracking-widest text-muted-foreground">Period</label>
+            <Select value={draft.period} onValueChange={(v) => setDraft({ ...draft, period: v })}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="once">One-off</SelectItem>
+                <SelectItem value="daily">Daily</SelectItem>
+                <SelectItem value="weekly">Weekly</SelectItem>
+                <SelectItem value="monthly">Monthly</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <label className="text-[10px] uppercase tracking-widest text-muted-foreground">Ends at (countdown)</label>
+            <Input type="datetime-local" value={draft.ends_at} onChange={(e) => setDraft({ ...draft, ends_at: e.target.value })} />
+          </div>
+        </div>
+        <ImageSettingControl label="Task banner image" value={draft.banner_url} onChange={(url) => setDraft({ ...draft, banner_url: url || "" })} />
         <Button className="btn-luxury" onClick={createTask}><Plus className="h-4 w-4 mr-1" />Assign task</Button>
       </Card>
       <div className="grid lg:grid-cols-2 gap-4">

@@ -59,6 +59,7 @@ const NAV: AdminNavItem[] = [
   { key: "settings",    label: "Settings",             icon: SettingsIcon,    admin: true },
   { key: "spotlights",  label: "Spotlights",           icon: Sparkles,        modOk: true },
   { key: "streakpush",  label: "Streak & Push",        icon: Sparkles,        admin: true },
+  { key: "surveys",     label: "Surveys",              icon: ClipboardList,   admin: true },
   { key: "tasks",       label: "Tasks & Achievements", icon: ClipboardList,   admin: true },
   { key: "tickets",     label: "Tickets",              icon: Ticket,          modOk: true, alertKey: "tickets" },
   { key: "tokens",      label: "Tokens",               icon: Coins,           admin: true, alertKey: "tokens" },
