@@ -32,6 +32,7 @@ import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as ChatRouteImport } from './routes/chat'
+import { Route as ArcadeRouteImport } from './routes/arcade'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AchievementsRouteImport } from './routes/achievements'
 import { Route as AboutRouteImport } from './routes/about'
@@ -157,6 +158,11 @@ const ChatRoute = ChatRouteImport.update({
   path: '/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ArcadeRoute = ArcadeRouteImport.update({
+  id: '/arcade',
+  path: '/arcade',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -208,6 +214,7 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/achievements': typeof AchievementsRoute
   '/admin': typeof AdminRoute
+  '/arcade': typeof ArcadeRoute
   '/chat': typeof ChatRoute
   '/checkout': typeof CheckoutRoute
   '/dashboard': typeof DashboardRoute
@@ -242,6 +249,7 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/achievements': typeof AchievementsRoute
   '/admin': typeof AdminRoute
+  '/arcade': typeof ArcadeRoute
   '/chat': typeof ChatRoute
   '/checkout': typeof CheckoutRoute
   '/dashboard': typeof DashboardRoute
@@ -277,6 +285,7 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/achievements': typeof AchievementsRoute
   '/admin': typeof AdminRoute
+  '/arcade': typeof ArcadeRoute
   '/chat': typeof ChatRoute
   '/checkout': typeof CheckoutRoute
   '/dashboard': typeof DashboardRoute
@@ -313,6 +322,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/achievements'
     | '/admin'
+    | '/arcade'
     | '/chat'
     | '/checkout'
     | '/dashboard'
@@ -347,6 +357,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/achievements'
     | '/admin'
+    | '/arcade'
     | '/chat'
     | '/checkout'
     | '/dashboard'
@@ -381,6 +392,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/achievements'
     | '/admin'
+    | '/arcade'
     | '/chat'
     | '/checkout'
     | '/dashboard'
@@ -416,6 +428,7 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   AchievementsRoute: typeof AchievementsRoute
   AdminRoute: typeof AdminRoute
+  ArcadeRoute: typeof ArcadeRoute
   ChatRoute: typeof ChatRoute
   CheckoutRoute: typeof CheckoutRoute
   DashboardRoute: typeof DashboardRoute
@@ -607,6 +620,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/arcade': {
+      id: '/arcade'
+      path: '/arcade'
+      fullPath: '/arcade'
+      preLoaderRoute: typeof ArcadeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin': {
       id: '/admin'
       path: '/admin'
@@ -700,6 +720,7 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   AchievementsRoute: AchievementsRoute,
   AdminRoute: AdminRoute,
+  ArcadeRoute: ArcadeRoute,
   ChatRoute: ChatRoute,
   CheckoutRoute: CheckoutRoute,
   DashboardRoute: DashboardRoute,
