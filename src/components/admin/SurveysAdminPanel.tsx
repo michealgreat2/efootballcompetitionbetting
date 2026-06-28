@@ -85,8 +85,23 @@ export function SurveysAdminPanel() {
     toast.success("Survey deleted"); load();
   }
   async function openResponses(s: any) {
-    const { data } = await supabase.from("survey_responses").select("*, profiles!user_id(full_name,email)").eq("survey_id", s.id).order("created_at", { ascending: false });
-    setViewResp({ survey: s, responses: data ?? [] });
+    const { data: resp } = await supabase
+      .from("survey_responses")
+      .select("*")
+      .eq("survey_id", s.id)
+      .order("created_at", { ascending: false });
+    const rows = resp ?? [];
+    const ids = Array.from(new Set(rows.map((r: any) => r.user_id).filter(Boolean)));
+    let profMap: Record<string, any> = {};
+    if (ids.length) {
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("id,full_name,email")
+        .in("id", ids);
+      profMap = Object.fromEntries((profs ?? []).map((p: any) => [p.id, p]));
+    }
+    const responses = rows.map((r: any) => ({ ...r, profiles: profMap[r.user_id] ?? null }));
+    setViewResp({ survey: s, responses });
   }
 
   return (
