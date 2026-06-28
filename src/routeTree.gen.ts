@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as WithdrawRouteImport } from './routes/withdraw'
 import { Route as WatchlistRouteImport } from './routes/watchlist'
 import { Route as VirtualRouteImport } from './routes/virtual'
+import { Route as TriviaRouteImport } from './routes/trivia'
 import { Route as TournamentRouteImport } from './routes/tournament'
 import { Route as TasksRouteImport } from './routes/tasks'
 import { Route as SurveysRouteImport } from './routes/surveys'
@@ -56,6 +57,11 @@ const WatchlistRoute = WatchlistRouteImport.update({
 const VirtualRoute = VirtualRouteImport.update({
   id: '/virtual',
   path: '/virtual',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TriviaRoute = TriviaRouteImport.update({
+  id: '/trivia',
+  path: '/trivia',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TournamentRoute = TournamentRouteImport.update({
@@ -235,6 +241,7 @@ export interface FileRoutesByFullPath {
   '/surveys': typeof SurveysRoute
   '/tasks': typeof TasksRoute
   '/tournament': typeof TournamentRoute
+  '/trivia': typeof TriviaRoute
   '/virtual': typeof VirtualRouteWithChildren
   '/watchlist': typeof WatchlistRoute
   '/withdraw': typeof WithdrawRoute
@@ -270,6 +277,7 @@ export interface FileRoutesByTo {
   '/surveys': typeof SurveysRoute
   '/tasks': typeof TasksRoute
   '/tournament': typeof TournamentRoute
+  '/trivia': typeof TriviaRoute
   '/virtual': typeof VirtualRouteWithChildren
   '/watchlist': typeof WatchlistRoute
   '/withdraw': typeof WithdrawRoute
@@ -306,6 +314,7 @@ export interface FileRoutesById {
   '/surveys': typeof SurveysRoute
   '/tasks': typeof TasksRoute
   '/tournament': typeof TournamentRoute
+  '/trivia': typeof TriviaRoute
   '/virtual': typeof VirtualRouteWithChildren
   '/watchlist': typeof WatchlistRoute
   '/withdraw': typeof WithdrawRoute
@@ -343,6 +352,7 @@ export interface FileRouteTypes {
     | '/surveys'
     | '/tasks'
     | '/tournament'
+    | '/trivia'
     | '/virtual'
     | '/watchlist'
     | '/withdraw'
@@ -378,6 +388,7 @@ export interface FileRouteTypes {
     | '/surveys'
     | '/tasks'
     | '/tournament'
+    | '/trivia'
     | '/virtual'
     | '/watchlist'
     | '/withdraw'
@@ -413,6 +424,7 @@ export interface FileRouteTypes {
     | '/surveys'
     | '/tasks'
     | '/tournament'
+    | '/trivia'
     | '/virtual'
     | '/watchlist'
     | '/withdraw'
@@ -449,6 +461,7 @@ export interface RootRouteChildren {
   SurveysRoute: typeof SurveysRoute
   TasksRoute: typeof TasksRoute
   TournamentRoute: typeof TournamentRoute
+  TriviaRoute: typeof TriviaRoute
   VirtualRoute: typeof VirtualRouteWithChildren
   WatchlistRoute: typeof WatchlistRoute
   WithdrawRoute: typeof WithdrawRoute
@@ -478,6 +491,13 @@ declare module '@tanstack/react-router' {
       path: '/virtual'
       fullPath: '/virtual'
       preLoaderRoute: typeof VirtualRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/trivia': {
+      id: '/trivia'
+      path: '/trivia'
+      fullPath: '/trivia'
+      preLoaderRoute: typeof TriviaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/tournament': {
@@ -741,6 +761,7 @@ const rootRouteChildren: RootRouteChildren = {
   SurveysRoute: SurveysRoute,
   TasksRoute: TasksRoute,
   TournamentRoute: TournamentRoute,
+  TriviaRoute: TriviaRoute,
   VirtualRoute: VirtualRouteWithChildren,
   WatchlistRoute: WatchlistRoute,
   WithdrawRoute: WithdrawRoute,
