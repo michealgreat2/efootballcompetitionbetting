@@ -129,11 +129,11 @@ export const broadcastPush = createServerFn({ method: "POST" })
 export const getPushSubscriberCount = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) => audienceSchema.parse(data))
-  .handler(async ({ context }) => {
+  .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
     if (!isAdmin) throw new Error("Forbidden");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const subs = await getAudienceSubscriptions(supabaseAdmin, context.data as Audience);
+    const subs = await getAudienceSubscriptions(supabaseAdmin, data as Audience);
     return { count: subs.length };
   });
