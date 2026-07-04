@@ -1244,6 +1244,9 @@ function MatchesPanel() {
     await supabase.from("matches").update({ home_score: hs, away_score: as, status: "ended", winner_team_id: winnerId }).eq("id", m.id);
     await supabase.from("markets").update({ is_open: false }).eq("match_id", m.id);
     await settleBetsForMatch(m.id, winnerId, hs, as);
+    // Self-heal: an accumulator whose last-resolving leg completes here may have
+    // been wrongly stranded at "lost" earlier — credit any all-won ticket now.
+    await supabase.rpc("resettle_won_bets");
     await logAudit("match_settled", "match", m.id, { home_score: hs, away_score: as, winner_team_id: winnerId });
     window.dispatchEvent(new CustomEvent("admin:futures-refresh", { detail: { matchId: m.id } }));
     toast.success("Match settled — bets paid out"); load();
