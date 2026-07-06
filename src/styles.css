@@ -725,6 +725,29 @@
   animation: shimmer 7s ease-in-out infinite;
 }
 
+/* ===== Virtual Gang League — dark bet-board theme ===== */
+.virtual-page {
+  position: relative;
+  background:
+    radial-gradient(120% 90% at 20% -10%, oklch(0.20 0.05 150 / 0.35), transparent 55%),
+    radial-gradient(120% 90% at 90% 0%, oklch(0.22 0.06 88 / 0.25), transparent 60%),
+    linear-gradient(180deg, #05070a 0%, #04060a 55%, #030407 100%);
+}
+.virtual-panel {
+  border-color: oklch(0.82 0.17 90 / 0.28) !important;
+  background:
+    linear-gradient(150deg, oklch(0.14 0.02 150 / 0.75), oklch(0.08 0.01 220 / 0.88)) !important;
+  backdrop-filter: blur(10px) saturate(140%);
+  box-shadow:
+    inset 0 1px 0 oklch(0.95 0.10 92 / 0.10),
+    0 14px 36px -20px oklch(0 0 0 / 0.85) !important;
+}
+.virtual-arena {
+  background:
+    radial-gradient(circle at 50% 45%, oklch(0.18 0.04 150 / 0.30), transparent 60%),
+    linear-gradient(160deg, #0a0d10, #05070a) !important;
+}
+
 /* ===== Global users count — 3D golden showcase ===== */
 .count-3d {
   border: 1px solid oklch(0.82 0.17 90 / 0.5);
