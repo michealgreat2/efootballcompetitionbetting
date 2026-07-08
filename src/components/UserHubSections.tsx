@@ -144,6 +144,7 @@ export function VipCard() {
               <div className={`h-full bg-gradient-to-r ${meta.color} animate-pulse`} style={{ width: `${Math.max(8, progress)}%` }} />
             </div>
             <div className="text-[11px] text-muted-foreground mt-1">Keep playing to unlock <span className="text-amber-300 font-semibold">{nextLabel ?? "the next tier"}</span> — your progress is a mystery until you rank up! 🎁</div>
+            {/* nextLabel intentionally hidden — ranks are revealed only after reaching them */}
           </>
         ) : (
           <div className="text-[11px] text-amber-300 mt-1">You've reached the highest tier. Legendary! 👑</div>
