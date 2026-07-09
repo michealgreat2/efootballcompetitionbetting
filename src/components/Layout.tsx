@@ -246,6 +246,7 @@ function SiteFooter() {
           <div className="flex gap-3 mt-2 text-xs">
             <button className="text-primary hover:underline" onClick={() => setOpen("about")}>Read more</button>
             <button className="text-primary hover:underline" onClick={() => setOpen("terms")}>Terms & Conditions</button>
+            <Link to="/faq" className="text-primary hover:underline">Help & FAQ</Link>
           </div>
         </div>
         <div>
