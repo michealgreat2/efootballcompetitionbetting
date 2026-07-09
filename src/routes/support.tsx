@@ -33,7 +33,7 @@ function SupportPage() {
 
   useEffect(() => {
     (supabase as any).from("app_settings").select("discord_support_url").eq("id", 1).maybeSingle()
-      .then(({ data }) => setDiscordUrl((data as any)?.discord_support_url ?? null));
+      .then(({ data }: any) => setDiscordUrl(data?.discord_support_url ?? null));
   }, []);
 
   useEffect(() => { if (!user) nav({ to: "/login" }); }, [user, nav]);
