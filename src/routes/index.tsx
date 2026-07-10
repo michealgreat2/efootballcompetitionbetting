@@ -17,7 +17,7 @@ import { SeasonBanner } from "@/components/SeasonBanner";
 import { Spotlight } from "@/components/Spotlight";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
-import { Crosshair, Flame, Trophy, ChevronRight, Coins, Ticket as TicketIcon, ClipboardPaste, X } from "lucide-react";
+import { Crosshair, Flame, Trophy, ChevronRight, Coins, Ticket as TicketIcon, ClipboardPaste, X, Dice5 } from "lucide-react";
 import { Countdown } from "@/components/Countdown";
 import { TeamLogo } from "@/components/TeamLogo";
 import hero from "@/assets/hero.jpg";
