@@ -208,3 +208,108 @@ function BetHistoryPage() {
     </Layout>
   );
 }
+
+function LotteryTicketDialog({ ticket, onClose }: { ticket: any | null; onClose: () => void }) {
+  if (!ticket) return null;
+  const draw = ticket.lottery_draws ?? {};
+  const picks: number[] = Array.isArray(ticket.numbers) && ticket.numbers.length ? ticket.numbers : (ticket.number != null ? [ticket.number] : []);
+  const drawn: number[] = Array.isArray(draw.winning_numbers) && draw.winning_numbers.length
+    ? draw.winning_numbers
+    : (draw.winning_number != null ? [draw.winning_number] : []);
+  const isDrawn = draw.status === "drawn" || drawn.length > 0;
+  const overall = String(ticket.status || "open").toLowerCase();
+  const overallMeta =
+    overall === "won" ? { label: "WON", cls: "text-emerald-300 border-emerald-500/50 bg-emerald-500/10", glow: "shadow-[0_0_40px_-8px_rgba(16,185,129,0.6)]" }
+    : overall === "lost" ? { label: "LOST", cls: "text-destructive border-destructive/50 bg-destructive/10", glow: "shadow-[0_0_40px_-8px_rgba(239,68,68,0.5)]" }
+    : { label: "PENDING", cls: "text-amber-300 border-amber-500/50 bg-amber-500/10", glow: "shadow-[0_0_40px_-8px_rgba(245,158,11,0.5)]" };
+  const hitCount = picks.filter((n) => drawn.includes(n)).length;
+
+  return (
+    <Dialog open={!!ticket} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="max-w-md overflow-hidden border-primary/30 bg-gradient-to-br from-primary/10 via-card/80 to-background/90 backdrop-blur-2xl shadow-[0_20px_80px_-20px_rgba(0,0,0,0.8)]">
+        <div className="pointer-events-none absolute -top-16 -right-16 h-48 w-48 rounded-full bg-primary/20 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-20 -left-16 h-48 w-48 rounded-full bg-amber-400/10 blur-3xl" />
+        <DialogHeader className="relative">
+          <div className="text-[10px] uppercase tracking-[0.35em] text-muted-foreground">Lottery ticket</div>
+          <DialogTitle className="flex items-center gap-2 gradient-gold-text text-xl">
+            <Dice5 className="h-5 w-5 text-primary" />{draw.title || "Lucky Numbers"}
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="relative space-y-4">
+          {/* Overall status banner */}
+          <div className={`rounded-2xl border px-4 py-3 flex items-center justify-between ${overallMeta.cls} ${overallMeta.glow}`}>
+            <div>
+              <div className="text-[10px] uppercase tracking-widest opacity-80">Overall result</div>
+              <div className="text-2xl font-black leading-none mt-0.5">{overallMeta.label}</div>
+            </div>
+            <div className="text-right">
+              {overall === "won" && Number(ticket.payout) > 0 ? (
+                <>
+                  <div className="text-[10px] uppercase tracking-widest opacity-80">Payout</div>
+                  <div className="text-lg font-black">+{Number(ticket.payout).toLocaleString()}</div>
+                </>
+              ) : (
+                <>
+                  <div className="text-[10px] uppercase tracking-widest opacity-80">Multiplier</div>
+                  <div className="text-lg font-black">x{draw.multiplier ?? "—"}</div>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Your numbers with per-number status */}
+          <div>
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Your numbers {isDrawn && <span className="text-primary">· {hitCount}/{picks.length} matched</span>}</div>
+            <div className="flex flex-wrap gap-2">
+              {picks.map((n, i) => {
+                const hit = drawn.includes(n);
+                const cls = !isDrawn
+                  ? "bg-amber-500/10 border-amber-500/40 text-amber-200"
+                  : hit
+                  ? "bg-emerald-500/15 border-emerald-500/50 text-emerald-200 shadow-[0_0_18px_-4px_rgba(16,185,129,0.7)]"
+                  : "bg-destructive/10 border-destructive/40 text-destructive/90";
+                return (
+                  <div key={i} className="flex flex-col items-center gap-1">
+                    <span className={`grid h-11 w-11 place-items-center rounded-xl border text-base font-black ${cls}`}>{n}</span>
+                    <span className={`text-[8px] uppercase tracking-widest ${!isDrawn ? "text-amber-300/80" : hit ? "text-emerald-300" : "text-destructive/70"}`}>{!isDrawn ? "Pending" : hit ? "Hit" : "Miss"}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Drawn numbers */}
+          {isDrawn && (
+            <div>
+              <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Winning numbers</div>
+              <div className="flex flex-wrap gap-2">
+                {drawn.map((n, i) => (
+                  <span key={i} className="grid h-9 min-w-9 px-1 place-items-center rounded-lg bg-gradient-gold text-background text-sm font-black shadow-gold">{n}</span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Meta */}
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <div className="rounded-xl border border-border/60 bg-background/40 px-3 py-2">
+              <div className="text-[9px] uppercase tracking-widest text-muted-foreground">Stake</div>
+              <div className="font-bold text-primary">{Number(ticket.stake).toLocaleString()}</div>
+            </div>
+            <div className="rounded-xl border border-border/60 bg-background/40 px-3 py-2">
+              <div className="text-[9px] uppercase tracking-widest text-muted-foreground">Placed</div>
+              <div className="font-semibold">{new Date(ticket.created_at).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</div>
+            </div>
+            {draw.drawn_at && (
+              <div className="rounded-xl border border-border/60 bg-background/40 px-3 py-2 col-span-2">
+                <div className="text-[9px] uppercase tracking-widest text-muted-foreground">Drawn at</div>
+                <div className="font-semibold">{new Date(draw.drawn_at).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</div>
+              </div>
+            )}
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
