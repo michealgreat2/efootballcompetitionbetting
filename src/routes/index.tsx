@@ -9,6 +9,7 @@ import { MatchCardLive } from "@/components/MatchCardLive";
 import { EventBanner } from "@/components/EventBanner";
 import { AnnouncementSlider, HighlightsRow, AdsRow } from "@/components/HomeContent";
 import { HomeBannerSlider } from "@/components/HomeBannerSlider";
+import { HomeQuickMenu } from "@/components/HomeQuickMenu";
 import { GrandPrizeWinners } from "@/components/GrandPrizeWinners";
 import { HotBets } from "@/components/HotBets";
 import { NewsSlider } from "@/components/NewsSlider";
@@ -96,7 +97,12 @@ function Index() {
 
   return (
     <Layout>
-      <HomeBannerSlider />
+      <section className="container mt-4">
+        <div className="flex items-stretch gap-2 sm:gap-3">
+          <div className="min-w-0 flex-1"><HomeBannerSlider embedded /></div>
+          <HomeQuickMenu />
+        </div>
+      </section>
       <section className="relative overflow-hidden">
         {settings?.hero_bg_url && (
           <img
