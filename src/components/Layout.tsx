@@ -53,6 +53,8 @@ function useForceReloadBroadcast() {
 export const Layout = ({ children }: { children: ReactNode }) => {
   const { user, profile, roles, isAdmin, isMod, signOut } = useAuth();
   const nav = useNavigate();
+  const location = useLocation();
+  const isHome = location.pathname === "/";
   useVirtualHeartbeat();
   useForceReloadBroadcast();
   const [railOpen, setRailOpen] = useState(false);
@@ -175,7 +177,7 @@ export const Layout = ({ children }: { children: ReactNode }) => {
           </div>
         )}
       </header>
-      <main className="relative lg:pl-0 pl-16 overflow-x-hidden">{children}</main>
+      <main className={`relative lg:pl-0 overflow-x-hidden ${isHome ? "pl-0" : "pl-16"}`}>{children}</main>
       <LevelUpModal />
       <GlobalWinAnimation />
       <BetSuccessPopout />
@@ -183,7 +185,7 @@ export const Layout = ({ children }: { children: ReactNode }) => {
       <PollPopout />
       <PushPermissionPrompt />
       <nav
-        className="lg:hidden fixed left-0 inset-y-0 pt-16 z-40 w-16 overflow-y-auto bg-transparent border-0 shadow-none"
+        className={`${isHome ? "hidden" : "lg:hidden"} fixed left-0 inset-y-0 pt-16 z-40 w-16 overflow-y-auto bg-transparent border-0 shadow-none`}
       >
         <div className="flex flex-col items-stretch gap-4 py-4 px-1">
           <button
