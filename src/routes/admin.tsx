@@ -3355,6 +3355,7 @@ const QUICK_ACTIONS: { i: any; l: string; t: string }[] = [
   { i: Vote, l: "Polls", t: "polls" },
   { i: ShoppingBag, l: "Shop", t: "shop" },
   { i: LifeBuoy, l: "FAQ / Help", t: "faq" },
+  { i: Newspaper, l: "News", t: "news" },
   { i: ListOrdered, l: "Leaderboard", t: "leaderboard" },
   { i: Trophy, l: "Matches", t: "matches" },
   { i: Send, l: "Notify", t: "notify" },
