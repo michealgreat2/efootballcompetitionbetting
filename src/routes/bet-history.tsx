@@ -151,20 +151,34 @@ function BetHistoryPage() {
           {/* LOTTERY */}
           <TabsContent value="lottery" className="mt-4 space-y-3">
             {lottery.length === 0 && <p className="text-muted-foreground text-sm">No lottery tickets yet.</p>}
-            {lottery.map((t) => (
-              <Card key={t.id} className="p-3 flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="font-bold text-sm flex items-center gap-1.5"><Dice5 className="h-4 w-4 text-primary" />Numbers {Array.isArray(t.numbers) && t.numbers.length ? t.numbers.join(", ") : t.number}</div>
-                  <div className="text-[11px] text-muted-foreground mt-0.5">stake {Number(t.stake).toLocaleString()} · {new Date(t.created_at).toLocaleString()}</div>
-                </div>
-                <div className="text-right shrink-0">
-                  <Badge variant="outline" className={t.status === "won" ? "border-emerald-500/50 text-emerald-300" : t.status === "lost" ? "border-destructive/50 text-destructive" : "border-amber-500/50 text-amber-300"}>
-                    {String(t.status || "open").toUpperCase()}
-                  </Badge>
-                  {Number(t.payout) > 0 && <div className="text-[11px] text-emerald-300 mt-1">+{Number(t.payout).toLocaleString()}</div>}
-                </div>
-              </Card>
-            ))}
+            {lottery.map((t) => {
+              const picks = Array.isArray(t.numbers) && t.numbers.length ? t.numbers : (t.number != null ? [t.number] : []);
+              return (
+                <button key={t.id} type="button" onClick={() => setSelectedLottery(t)} className="w-full text-left">
+                  <Card className="p-3 flex items-center justify-between gap-3 hover:border-primary/60 transition group cursor-pointer">
+                    <div className="min-w-0">
+                      <div className="font-bold text-sm flex items-center gap-1.5"><Dice5 className="h-4 w-4 text-primary" />{t.lottery_draws?.title || "Lottery"}</div>
+                      <div className="mt-1 flex flex-wrap gap-1">
+                        {picks.map((n: number, i: number) => (
+                          <span key={i} className="grid h-6 min-w-6 px-1 place-items-center rounded-md bg-primary/15 border border-primary/30 text-primary text-[11px] font-black">{n}</span>
+                        ))}
+                      </div>
+                      <div className="text-[11px] text-muted-foreground mt-1">stake {Number(t.stake).toLocaleString()} · {new Date(t.created_at).toLocaleString()}</div>
+                    </div>
+                    <div className="text-right shrink-0 flex items-center gap-2">
+                      <div>
+                        <Badge variant="outline" className={t.status === "won" ? "border-emerald-500/50 text-emerald-300" : t.status === "lost" ? "border-destructive/50 text-destructive" : "border-amber-500/50 text-amber-300"}>
+                          {String(t.status || "open").toUpperCase()}
+                        </Badge>
+                        {Number(t.payout) > 0 && <div className="text-[11px] text-emerald-300 mt-1">+{Number(t.payout).toLocaleString()}</div>}
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition" />
+                    </div>
+                  </Card>
+                </button>
+              );
+            })}
+            <LotteryTicketDialog ticket={selectedLottery} onClose={() => setSelectedLottery(null)} />
           </TabsContent>
 
           {/* ARCADE */}
