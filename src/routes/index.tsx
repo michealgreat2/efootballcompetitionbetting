@@ -251,7 +251,7 @@ function Index() {
 function FuturesSection({ title, markets, maxSelections, featured = [] }: { title: string; markets: MatchRow[]; maxSelections: number; featured?: MatchRow[] }) {
   const { selections, add, remove, setOpen } = useBetSlip();
   return (
-    <section className="container mt-10">
+    <section className="container mt-6">
       <div className="seasonal-golden relative overflow-hidden rounded-3xl mb-5 px-5 py-6 md:px-8 md:py-8">
         <div className="pointer-events-none absolute -right-10 -top-10 opacity-25">
           <Trophy className="h-44 w-44 text-amber-200" />
