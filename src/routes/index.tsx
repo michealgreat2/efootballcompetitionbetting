@@ -187,7 +187,9 @@ function Index() {
                                 className="absolute inset-0 h-full w-full"
                                 style={{ objectFit: (m.featured_image_fit as any) || "cover", objectPosition: m.featured_image_position || "center" }}
                               />
-                              <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/35 to-background/70" />
+                              {/* Keep the uploaded image fully visible — only a soft bottom
+                                  scrim behind the card content for legibility. */}
+                              <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-background/80 via-background/25 to-transparent" />
                               <div className="relative p-4 md:p-6"><MatchCardLive match={m} /></div>
                             </div>
                           ) : (
