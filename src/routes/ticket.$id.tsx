@@ -146,7 +146,7 @@ function BetTicket({ bet, viewerId }: { bet: any; viewerId: string }) {
 
   return (
     <Layout>
-      <div className="w-full max-w-xl px-3 py-6 md:ml-0 md:mr-auto">
+      <div className="w-full max-w-3xl px-3 py-6 md:ml-0 md:mr-auto">
         <Link to="/dashboard" className="text-muted-foreground text-sm flex items-center gap-1 hover:text-primary mb-3">
           <ArrowLeft className="h-4 w-4" />
           My bets
@@ -265,9 +265,6 @@ export function BetVoucher({
 
   return (
     <div className="relative px-0 py-4 animate-fade-in">
-      {/* Outer ambient glow */}
-      <div className="absolute -inset-6 rounded-[40px] bg-[radial-gradient(circle_at_30%_20%,oklch(0.85_0.22_152/0.30),transparent_60%),radial-gradient(circle_at_80%_80%,oklch(0.82_0.17_90/0.22),transparent_60%)] blur-3xl pointer-events-none" />
-
       <div className="relative rounded-[40px] voucher-frame voucher-bg overflow-hidden transition-transform duration-500 hover:[transform:perspective(1600px)_rotateX(0.6deg)_rotateY(-0.6deg)_translateY(-2px)]">
         {/* LSL logo watermark behind everything */}
         <div className="pointer-events-none absolute inset-0 grid place-items-center opacity-[0.08]" aria-hidden>

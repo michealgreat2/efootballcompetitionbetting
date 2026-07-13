@@ -151,7 +151,8 @@ export function MatchCardLive({ match, variant = "card" }: { match: MatchRow; va
     const oddsList = market?.odds.slice(0, 3) ?? [];
     const labels = shortLabels(oddsList.length);
     return (
-      <Card className="glass px-3 py-2.5 hover:border-primary/60 transition-all relative overflow-hidden">
+      <Card className="glass px-3 py-2.5 pl-4 hover:border-primary/60 hover:-translate-y-0.5 transition-all relative overflow-hidden">
+        <span className={`absolute left-0 top-0 h-full w-1 ${match.status === "live" ? "bg-destructive" : match.status === "ended" ? "bg-muted-foreground/40" : "bg-emerald-500/70"}`} />
         <div className="flex items-stretch gap-2 sm:gap-3">
           <Link to="/matches/$matchId" params={{ matchId: match.id }} className="min-w-0 flex-1 flex flex-col justify-center">
             <div className="flex items-center gap-1.5 text-[9px] uppercase tracking-wider text-muted-foreground">
@@ -206,7 +207,8 @@ export function MatchCardLive({ match, variant = "card" }: { match: MatchRow; va
   }
 
   return (
-    <Card className="glass p-4 hover:border-primary/60 transition-all relative overflow-hidden">
+    <Card className="glass p-4 hover:border-primary/60 hover:-translate-y-0.5 hover:shadow-luxury transition-all relative overflow-hidden">
+      <span className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
       {match.status === "live" && (
         <div className="absolute top-0 right-0 px-2 py-0.5 text-[10px] font-bold tracking-widest text-destructive-foreground bg-destructive rounded-bl-md">
           ● LIVE

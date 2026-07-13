@@ -3924,6 +3924,7 @@ export type Database = {
         Returns: undefined
       }
       dismiss_survey: { Args: { _survey_id: string }; Returns: Json }
+      display_name_for: { Args: { _uid: string }; Returns: string }
       draw_lottery: {
         Args: { _draw_id: string; _winning_number?: number }
         Returns: Json
@@ -3959,6 +3960,10 @@ export type Database = {
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_mod_or_admin: { Args: { _user_id: string }; Returns: boolean }
+      notify_admins: {
+        Args: { _body: string; _link: string; _title: string }
+        Returns: undefined
+      }
       place_lottery_ticket: {
         Args: { _draw_id: string; _number: number; _stake: number }
         Returns: Json
