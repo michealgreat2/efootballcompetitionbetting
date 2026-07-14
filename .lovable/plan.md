@@ -1,63 +1,101 @@
-## Remaining scope — one pass
+## Scope (from your answers)
 
-### 1. Platform branding (name + logo) — admin-configurable
+1. **Two new football variants** — full duplicates of existing Instant + Championship, drawing only from football teams.
+2. **Instant Virtual behavior** — remove global countdown; shootout starts per-user immediately on Place Bet.
+3. **Championship auto-restart** — on completion, immediately reshuffle 16 random teams and start again.
+4. **Top-right logo** — new admin control for a corner logo (near bell/avatar).
+5. Fix 404 on Virtual page.
+6. Fix Championship "invalid input value for enum app_role: super_admin" start error.
+7. Fix team delete timeout.
+8. Admin control for the create-account left-side hero image.
+9. Auto validation + resizing on logo/OG uploads with clear errors.
 
-Add to `app_settings` (single-row config):
-- `platform_name` text (default "LSL")
-- `platform_tagline` text
-- `platform_description` text
-- `platform_logo_url` text (main logo used across app)
-- `platform_logo_auth_url` text (login/register pages)
-- `platform_logo_voucher_url` text (bet slips / vouchers / receipts)
-- `platform_og_image_url` text (SEO share image)
+---
 
-Then:
-- New admin panel section "Branding" (in reorganized settings) with text inputs + `ImageSettingControl` for each logo slot.
-- Create a `useBranding()` hook that reads `app_settings` once and exposes `{ name, tagline, description, logos }`; cache in React Query.
-- Replace hardcoded "LSL" / logo image references in: `Layout` (header/sidebar), `login.tsx`, `register.tsx`, `forgot-password.tsx`, `reset-password.tsx`, `HomeContent`/index hero, `BetSlip` / `BetSuccessPopout` / `ticket.$id.tsx` (voucher), and `__root.tsx` head defaults (og:site_name, og:image).
+## 1. Database migration (single file)
 
-### 2. Admin settings reorganization
+**Fix `app_role` in RPC** — `championship_start` currently checks `'super_admin'::app_role`, but the enum has no such value. Rewrite the guard to admin-only (or add a `moderator` fallback — enum has `admin`, `moderator`). Also add `championship_tick` to auto-restart when a tournament completes and the arena is open.
 
-`app_settings` has 120 columns spread across one giant panel. Group into tabs/accordions:
-- Branding (name, logos, description, OG image)
-- Platform (maintenance, feature flags, region)
-- Betting (odds, limits, cashout, hot bets)
-- Virtual (instant + championship flags, cadence)
-- Wallet & Payments (min/max, fees, providers)
-- Notifications & Push (VAPID status, broadcast defaults)
-- Community (chat, gangs, polls, surveys)
-- Rewards (VIP, streaks, referrals, spins, lottery)
-- SEO & Meta (title, description, og image, sitemap)
+**Add football sport tag**
+- `teams.sport text default 'generic'` (`'generic' | 'football'`)
+- Backfill: mark existing teams as `generic`. Admin flags football teams in Clans panel.
 
-Implementation: refactor the main admin settings screen to use a left rail (categories) + right pane (fields for that category), reusing existing field components. No new backend logic — just presentation.
+**Championship variants** — `tournaments.kind` already text; add two new kinds:
+- `championship_football` (parallel to `championship_virtual`)
+- Instant matches already keyed by `is_virtual`; add `matches.sport text default 'generic'` so football-instant rounds can be filtered.
 
-### 3. Multi-select delete on admin lists
+**App settings additions**
+- `virtual_cycle_running_football boolean` (per-user instant is trigger-based, but keep an admin open/closed flag)
+- `virtual_championship_football_enabled boolean`
+- `virtual_championship_auto_restart boolean default true`
+- `platform_logo_corner_url text` (top-right logo)
+- `auth_hero_image_url text` (login/register left-side hero)
 
-Add checkbox column + "Delete selected" action to:
-- Clans admin (`ClansAdminPanel`)
-- Bet tracker / Top bets (`TopBetsPanel`)
-- Battle (Tournament + tournament_matches admin)
-- Virtual (Instant rounds + Championship tournaments + Teams list)
+**Team delete performance** — add `SECURITY DEFINER` RPC `delete_teams_bulk(uuid[])` that:
+- Deletes dependent `bet_selections`, `bets`, `odds`, `tournament_matches`, `matches`, `players` in one statement each with `WHERE team_id = ANY(...)`, then `teams`.
+- Runs with a raised local statement_timeout.
+- Admin-only guard via `has_role(auth.uid(), 'admin')`.
+Wire admin panels to call this RPC instead of `.delete().in('id', ids)`.
 
-Pattern: local `Set<string>` selection state, header checkbox for select-all-on-page, bulk `.in('id', [...])` delete with confirm dialog, then re-fetch. Reuse `ActionConfirmDialog`.
+**Championship auto-restart trigger** — extend `championship_tick` so when a `championship_virtual` or `championship_football` tournament flips to `completed`, if `virtual_championship_auto_restart` is on and the arena is open, insert a fresh `scheduled` tournament with a 30s delay and immediately draft 16 random teams from the matching sport pool.
 
-### 4. Push subscribers accuracy
+## 2. Frontend
 
-Audit `push_subscriptions` counts:
-- Deduplicate on endpoint (unique constraint if missing).
-- Mark stale rows: on 404/410 delivery response, delete subscription (already partially done in `push-send.server.ts` — verify).
-- Admin push panel should show `active` count = subs where `last_success_at` within 30 days OR never failed, not raw row count.
-- Add cleanup RPC `prune_dead_push_subscriptions()` and a "Prune dead" button in `PushBroadcastPanel`.
+**Virtual hub (`/virtual/`)** — grid becomes 4 cards:
+- Instant Virtual (existing)
+- Championship Virtual (existing)
+- Instant E-Football (new — football pool)
+- Championship E-Football (new — football pool)
 
-### Technical notes
+**404 fix** — the 404 at `/virtual/championship` is the missing `championship_start` execute path (RPC crashes on super_admin enum). Once migration lands, page loads normally. Also add `errorComponent`/`notFoundComponent` to both new routes.
 
-- One migration: add branding columns to `app_settings`, add unique constraint on `push_subscriptions.endpoint` (if missing), add `prune_dead_push_subscriptions()` function.
-- No changes to server-function auth model or routing.
-- All admin-only UI stays behind existing `has_role(admin)` checks.
-- Keep component edits minimal — reuse existing panels; only the settings screen shell changes shape.
+**Instant Virtual rework** — remove the global round countdown UI. Replace with a "Ready to shoot" state. On Place Bet click, call a new server function `start_user_shootout(bet_id)` (or extend existing `user_virtual_rounds` insert) that:
+- Creates a private round for that user only
+- Runs the animation client-side (existing shootout animation) from the returned seed
+- No other user's timing is affected.
+Global cycle worker is untouched — it just no longer drives the instant page.
 
-### Out of scope
+**New routes**
+- `src/routes/virtual.football.tsx` (instant football, near-identical to `virtual.instant.tsx`, filters teams by `sport='football'`)
+- `src/routes/virtual.football-championship.tsx` (mirror of `virtual.championship.tsx` with `kind='championship_football'`)
 
-- Rewriting the settings storage model (still one `app_settings` row).
-- Redesigning individual admin panels beyond adding multi-select.
-- Rebranding beyond text/logo swaps (no color/theme changes).
+**Register/Login hero** — read `auth_hero_image_url` from `app_settings`; render on left half. Fall back to bundled `auth-gangster.jpg`.
+
+**Top-right logo** — Layout header adds a small logo near the bell/avatar area, sourced from `platform_logo_corner_url`.
+
+**Image upload validation** — new `validateAndResizeImage()` util used by `ImageSettingControl`:
+- Rejects non-image MIME types.
+- For logos: enforces max 2MB, min 128×128, resizes to 512×512 fit-contain.
+- For OG images: enforces 1200×630 (or close aspect), resizes/pads to exact 1200×630.
+- Shows toast with specific error ("File too small — must be at least 128×128", etc.)
+- Uses `canvas` in-browser resize; no server involvement.
+
+## 3. Admin
+
+**Categorized within existing admin page** (no new page) — Virtual admin panel splits into tabs:
+- Instant (generic)
+- Instant (football)
+- Championship (generic) — with **Auto-restart** switch
+- Championship (football) — with **Auto-restart** switch
+
+**Clans admin** — team edit dialog gets a "Sport" selector (`generic` / `football`) so admin can tag existing teams as football teams for the football pool. Bulk-tag button in Teams tab.
+
+**Branding admin** — add two new slots:
+- Corner logo (top-right)
+- Auth-page hero image (left half of login/register)
+Both use the new validated `ImageSettingControl`.
+
+## 4. Technical notes
+
+- Migration order: enum guard fix (`admin` only), then columns, then bulk-delete RPC, then auto-restart tick.
+- `championship_tick` becomes the single scheduler heartbeat for both `_virtual` and `_football` kinds.
+- Instant-shootout per-user uses existing `user_virtual_rounds` table (already there per schema).
+- Bulk delete RPC runs `SET LOCAL statement_timeout = '60s'` and deletes in FK-safe order.
+- Image validation is pure browser; server just stores the resulting URL as before.
+
+## Out of scope
+- New bet market types for football (using existing markets).
+- Redesigning the admin sidebar again.
+- Rewriting the global virtual cycle worker (still exists for background matches page).
+
+Say go and I'll ship it in one pass.

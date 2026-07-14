@@ -152,6 +152,14 @@ export const Layout = ({ children }: { children: ReactNode }) => {
             {!isAdmin && isMod && <NavLink to="/mod" icon={Shield} label="Mod" danger />}
           </nav>
           <div className="flex items-center gap-2 shrink-0 ml-auto lg:ml-0">
+            {branding.logoCornerUrl && (
+              <img
+                src={branding.logoCornerUrl}
+                alt={branding.name}
+                className="h-8 w-8 rounded-full object-cover border border-primary/30 shadow-gold hidden sm:block"
+                title={`${branding.name} — corner logo`}
+              />
+            )}
             <Link to="/shop" title="Rewards Shop" aria-label="Rewards Shop">
               <Button variant="ghost" size="icon" className="rounded-full border border-transparent hover:border-primary/30">
                 <ShoppingBag className="h-4 w-4 text-primary" />

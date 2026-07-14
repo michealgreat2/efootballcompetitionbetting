@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Upload, Link2, Trash2, Loader2 } from "lucide-react";
+import { validateAndResize, type ImageKind } from "@/lib/image-validation";
 
 const FIT_OPTIONS = [
   { v: "cover", l: "Cover (fill & crop)" },
@@ -38,6 +39,7 @@ export function ImageSettingControl({
   aspect = "16 / 9",
   showFitControls = true,
   previewBg = "#0b1512",
+  validation,
 }: {
   label: string;
   value: string | null | undefined;
@@ -50,14 +52,26 @@ export function ImageSettingControl({
   aspect?: string;
   showFitControls?: boolean;
   previewBg?: string;
+  /** When set, incoming files are validated + resized to spec before upload. */
+  validation?: ImageKind;
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [urlDraft, setUrlDraft] = useState("");
   const [busy, setBusy] = useState(false);
 
-  async function upload(f: File) {
+  async function upload(input: File) {
     setBusy(true);
     try {
+      let f = input;
+      if (validation) {
+        try {
+          const v = await validateAndResize(input, validation);
+          f = v.file;
+        } catch (err: any) {
+          toast.error(err?.message || "Image failed validation");
+          return;
+        }
+      }
       const path = `appearance/${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${Date.now()}-${f.name}`;
       const { error } = await supabase.storage.from("ads").upload(path, f, { upsert: true });
       if (error) { toast.error(error.message); return; }

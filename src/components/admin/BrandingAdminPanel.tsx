@@ -15,6 +15,8 @@ type Row = {
   platform_logo_url: string | null;
   platform_logo_auth_url: string | null;
   platform_logo_voucher_url: string | null;
+  platform_logo_corner_url: string | null;
+  auth_hero_image_url: string | null;
   platform_og_image_url: string | null;
   site_name: string | null;
 };
@@ -27,6 +29,8 @@ export function BrandingAdminPanel() {
     platform_logo_url: null,
     platform_logo_auth_url: null,
     platform_logo_voucher_url: null,
+    platform_logo_corner_url: null,
+    auth_hero_image_url: null,
     platform_og_image_url: null,
     site_name: "",
   });
@@ -36,7 +40,7 @@ export function BrandingAdminPanel() {
     (async () => {
       const { data } = await (supabase as any)
         .from("app_settings")
-        .select("site_name,platform_name,platform_tagline,platform_description,platform_logo_url,platform_logo_auth_url,platform_logo_voucher_url,platform_og_image_url")
+        .select("site_name,platform_name,platform_tagline,platform_description,platform_logo_url,platform_logo_auth_url,platform_logo_voucher_url,platform_logo_corner_url,auth_hero_image_url,platform_og_image_url")
         .eq("id", 1).maybeSingle();
       if (data) setRow((r) => ({ ...r, ...data }));
     })();
@@ -51,6 +55,8 @@ export function BrandingAdminPanel() {
       platform_logo_url: row.platform_logo_url,
       platform_logo_auth_url: row.platform_logo_auth_url,
       platform_logo_voucher_url: row.platform_logo_voucher_url,
+      platform_logo_corner_url: row.platform_logo_corner_url,
+      auth_hero_image_url: row.auth_hero_image_url,
       platform_og_image_url: row.platform_og_image_url,
       site_name: row.platform_name || row.site_name,
     }).eq("id", 1);
@@ -91,10 +97,25 @@ export function BrandingAdminPanel() {
         <div className="font-bold">Logos</div>
         <p className="text-[11px] text-muted-foreground">Upload once, or paste a public image URL. Each slot falls back to the Main logo if left empty.</p>
         <div className="grid gap-3 md:grid-cols-3">
-          <ImageSettingControl label="Main logo (header/sidebar)" value={row.platform_logo_url} onChange={(u) => set("platform_logo_url", u)} aspect="1 / 1" showFitControls={false} />
-          <ImageSettingControl label="Auth pages logo (login/register)" value={row.platform_logo_auth_url} onChange={(u) => set("platform_logo_auth_url", u)} aspect="1 / 1" showFitControls={false} />
-          <ImageSettingControl label="Voucher / receipt logo" value={row.platform_logo_voucher_url} onChange={(u) => set("platform_logo_voucher_url", u)} aspect="1 / 1" showFitControls={false} />
+          <ImageSettingControl label="Main logo (header, top-left)" value={row.platform_logo_url} onChange={(u) => set("platform_logo_url", u)} aspect="1 / 1" showFitControls={false} validation="logo-square" help="Auto-resized to 512x512. PNG/JPG/WEBP. Min 128x128." />
+          <ImageSettingControl label="Corner logo (top-right, near bell/avatar)" value={row.platform_logo_corner_url} onChange={(u) => set("platform_logo_corner_url", u)} aspect="1 / 1" showFitControls={false} validation="logo-square" help="Shown next to notifications/avatar. Falls back to Main logo if empty." />
+          <ImageSettingControl label="Auth pages logo (login/register header)" value={row.platform_logo_auth_url} onChange={(u) => set("platform_logo_auth_url", u)} aspect="1 / 1" showFitControls={false} validation="logo-square" />
+          <ImageSettingControl label="Voucher / receipt logo" value={row.platform_logo_voucher_url} onChange={(u) => set("platform_logo_voucher_url", u)} aspect="1 / 1" showFitControls={false} validation="logo-square" />
         </div>
+      </Card>
+
+      <Card className="p-4 space-y-3">
+        <div className="font-bold">Auth pages hero</div>
+        <p className="text-[11px] text-muted-foreground">The large image on the left half of the login and create-account pages. Auto-resized to 1600x1200.</p>
+        <ImageSettingControl
+          label="Login / register hero image"
+          value={row.auth_hero_image_url}
+          onChange={(u) => set("auth_hero_image_url", u)}
+          aspect="4 / 3"
+          showFitControls={false}
+          validation="auth-hero"
+          help="Min 800x600. PNG/JPG/WEBP. Auto-cropped to fit."
+        />
       </Card>
 
       <Card className="p-4 space-y-3">
@@ -105,6 +126,7 @@ export function BrandingAdminPanel() {
           onChange={(u) => set("platform_og_image_url", u)}
           aspect="1200 / 630"
           showFitControls={false}
+          validation="og-social"
           help="Used by Facebook, Twitter, WhatsApp, and Slack link previews. 1200x630 recommended."
         />
       </Card>

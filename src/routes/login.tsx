@@ -55,6 +55,7 @@ function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const brandingHero = useBranding().authHeroUrl;
 
   useEffect(() => {
     if (user) nav({ to: "/dashboard", replace: true });
@@ -77,7 +78,7 @@ function LoginPage() {
         {/* LEFT — cinematic gangster panel */}
         <div className="relative hidden md:block overflow-hidden">
           <img
-            src={gangsterAsset.url}
+            src={brandingHero || gangsterAsset.url}
             alt=""
             className="absolute inset-0 h-full w-full object-cover"
             loading="eager"

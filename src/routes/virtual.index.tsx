@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { Crosshair, Trophy, ArrowRight, Radio, Users, History } from "lucide-react";
+// Football variants share the same engine but pull from the football-tagged team pool.
 
 export const Route = createFileRoute("/virtual/")({
   head: () => ({
@@ -24,20 +25,23 @@ export const Route = createFileRoute("/virtual/")({
 type Flags = {
   virtual_cycle_running?: boolean | null;
   virtual_championship_enabled?: boolean | null;
+  virtual_championship_football_enabled?: boolean | null;
+  virtual_football_instant_enabled?: boolean | null;
 };
 
 function VirtualHubPage() {
   const [flags, setFlags] = useState<Flags>({});
   const [liveInstant, setLiveInstant] = useState(0);
   const [nextChamp, setNextChamp] = useState<{ starts_at: string | null; status: string | null } | null>(null);
+  const [nextChampFb, setNextChampFb] = useState<{ starts_at: string | null; status: string | null } | null>(null);
 
   useEffect(() => {
     (async () => {
       const sb = supabase as any;
-      const [{ data: s }, { count: liveCount }, { data: t }] = await Promise.all([
+      const [{ data: s }, { count: liveCount }, { data: t }, { data: tFb }] = await Promise.all([
         sb
           .from("app_settings")
-          .select("virtual_cycle_running,virtual_championship_enabled")
+          .select("virtual_cycle_running,virtual_championship_enabled,virtual_championship_football_enabled,virtual_football_instant_enabled")
           .eq("id", 1)
           .maybeSingle(),
         sb
@@ -53,15 +57,26 @@ function VirtualHubPage() {
           .order("starts_at", { ascending: true })
           .limit(1)
           .maybeSingle(),
+        sb
+          .from("tournaments")
+          .select("starts_at,status")
+          .eq("kind", "championship_football")
+          .in("status", ["scheduled", "live"])
+          .order("starts_at", { ascending: true })
+          .limit(1)
+          .maybeSingle(),
       ]);
       setFlags((s ?? {}) as Flags);
       setLiveInstant(liveCount ?? 0);
       setNextChamp((t ?? null) as any);
+      setNextChampFb((tFb ?? null) as any);
     })();
   }, []);
 
   const instantOpen = !!flags.virtual_cycle_running;
   const champOpen = !!flags.virtual_championship_enabled;
+  const footballInstantOpen = !!flags.virtual_football_instant_enabled;
+  const footballChampOpen = !!flags.virtual_championship_football_enabled;
 
   return (
     <Layout>
@@ -111,6 +126,37 @@ function VirtualHubPage() {
                 ) : null
               }
             />
+            <ArenaCard
+              to="/virtual/football-instant"
+              accent="from-emerald-500/40 via-emerald-600/10"
+              icon={<Crosshair className="h-8 w-8" />}
+              tag="Instant E-Football"
+              title="Football Shootouts"
+              description="Same instant format, but drawn from the football-team pool. Your private shootout starts the moment you place your bet — no waiting."
+              live={0}
+              open={footballInstantOpen}
+              closedLabel="Closed by admin"
+              cta="Enter pitch"
+            />
+            <ArenaCard
+              to="/virtual/football-championship"
+              accent="from-emerald-500/40 via-teal-600/10"
+              icon={<Trophy className="h-8 w-8" />}
+              tag="Championship E-Football"
+              title="Football Knockout Cup"
+              description="16 football teams. Same bracket engine — R16 through Final. Auto-restarts a new cup as soon as the current one crowns its champion."
+              live={nextChampFb?.status === "live" ? 1 : 0}
+              open={footballChampOpen}
+              closedLabel="Closed by admin"
+              cta="View bracket"
+              extra={
+                nextChampFb?.starts_at ? (
+                  <span className="text-[11px] uppercase tracking-[0.25em] text-emerald-300">
+                    Next: {new Date(nextChampFb.starts_at).toLocaleString(undefined, { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
+                  </span>
+                ) : null
+              }
+            />
           </div>
 
           <div className="text-center">
@@ -141,7 +187,7 @@ function ArenaCard({
   cta,
   extra,
 }: {
-  to: "/virtual/instant" | "/virtual/championship";
+  to: "/virtual/instant" | "/virtual/championship" | "/virtual/football-instant" | "/virtual/football-championship";
   accent: string;
   icon: React.ReactNode;
   tag: string;

@@ -26,6 +26,9 @@ type Tournament = {
  */
 export function ChampionshipAdminPanel() {
   const [enabled, setEnabled] = useState(false);
+  const [footballEnabled, setFootballEnabled] = useState(false);
+  const [autoRestart, setAutoRestart] = useState(true);
+  const [kind, setKind] = useState<"championship_virtual" | "championship_football">("championship_virtual");
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [name, setName] = useState("");
   const [startsAt, setStartsAt] = useState("");
@@ -36,25 +39,27 @@ export function ChampionshipAdminPanel() {
 
   async function load() {
     const [{ data: s }, { data: ts }] = await Promise.all([
-      sb.from("app_settings").select("virtual_championship_enabled").eq("id", 1).maybeSingle(),
+      sb.from("app_settings").select("virtual_championship_enabled,virtual_championship_football_enabled,virtual_championship_auto_restart").eq("id", 1).maybeSingle(),
       sb
         .from("tournaments")
         .select("id,name,starts_at,status,current_stage,stage_gap_seconds,bracket_size")
-        .eq("kind", "championship_virtual")
+        .in("kind", ["championship_virtual","championship_football"])
         .order("starts_at", { ascending: false })
         .limit(20),
     ]);
     setEnabled(!!s?.virtual_championship_enabled);
+    setFootballEnabled(!!s?.virtual_championship_football_enabled);
+    setAutoRestart(s?.virtual_championship_auto_restart ?? true);
     setTournaments((ts ?? []) as Tournament[]);
   }
 
   useEffect(() => { load(); }, []);
 
-  async function toggleEnabled(v: boolean) {
-    setEnabled(v);
-    const { error } = await sb.from("app_settings").update({ virtual_championship_enabled: v }).eq("id", 1);
+  async function toggleFlag(col: string, v: boolean, setter: (b: boolean) => void, label: string) {
+    setter(v);
+    const { error } = await sb.from("app_settings").update({ [col]: v }).eq("id", 1);
     if (error) { toast.error(error.message); return; }
-    toast.success(v ? "Championship Virtual opened" : "Championship Virtual closed");
+    toast.success(`${label} ${v ? "on" : "off"}`);
   }
 
   async function schedule() {
@@ -63,7 +68,7 @@ export function ChampionshipAdminPanel() {
     setSaving(true);
     const { error } = await sb.from("tournaments").insert({
       name: name.trim(),
-      kind: "championship_virtual",
+      kind,
       status: "scheduled",
       starts_at: new Date(startsAt).toISOString(),
       stage_gap_seconds: gap,
@@ -73,7 +78,7 @@ export function ChampionshipAdminPanel() {
     });
     setSaving(false);
     if (error) return toast.error(error.message);
-    toast.success("Championship scheduled");
+    toast.success(`${kind === "championship_football" ? "Football Cup" : "Championship"} scheduled`);
     setName(""); setStartsAt("");
     load();
   }
@@ -94,13 +99,14 @@ export function ChampionshipAdminPanel() {
   return (
     <div className="space-y-4">
       <Card className="glass p-5 border-primary/30">
-        <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="flex items-center justify-between gap-3 flex-wrap p-3 rounded-lg border border-primary/20 bg-background/40">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-xl bg-gradient-gold grid place-items-center shadow-gold">
               <Trophy className="h-5 w-5 text-background" />
             </div>
             <div>
-              <div className="font-black text-lg">Championship Virtual</div>
+              <div className="font-black text-base">Championship Virtual</div>
               <div className="text-xs text-muted-foreground">16-team knockout tournaments (R16 → QF → SF → Final)</div>
             </div>
           </div>
@@ -108,8 +114,33 @@ export function ChampionshipAdminPanel() {
             <Badge variant="outline" className={enabled ? "border-emerald-500/40 text-emerald-300 bg-emerald-500/10" : "border-muted/50 text-muted-foreground bg-muted/20"}>
               {enabled ? "Open" : "Closed"}
             </Badge>
-            <Switch checked={enabled} onCheckedChange={toggleEnabled} />
+            <Switch checked={enabled} onCheckedChange={(v) => toggleFlag("virtual_championship_enabled", v, setEnabled, "Championship Virtual")} />
           </div>
+        </div>
+        <div className="flex items-center justify-between gap-3 flex-wrap p-3 rounded-lg border border-primary/20 bg-background/40">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 grid place-items-center">
+              <Trophy className="h-5 w-5 text-emerald-300" />
+            </div>
+            <div>
+              <div className="font-black text-base">Championship E-Football</div>
+              <div className="text-xs text-muted-foreground">Same engine, uses football-tagged teams</div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className={footballEnabled ? "border-emerald-500/40 text-emerald-300 bg-emerald-500/10" : "border-muted/50 text-muted-foreground bg-muted/20"}>
+              {footballEnabled ? "Open" : "Closed"}
+            </Badge>
+            <Switch checked={footballEnabled} onCheckedChange={(v) => toggleFlag("virtual_championship_football_enabled", v, setFootballEnabled, "Championship E-Football")} />
+          </div>
+        </div>
+        </div>
+        <div className="mt-3 flex items-center justify-between gap-3 flex-wrap p-3 rounded-lg border border-amber-500/30 bg-amber-500/5">
+          <div>
+            <div className="font-black text-sm">Auto-restart after completion</div>
+            <div className="text-xs text-muted-foreground">When a tournament ends, immediately reshuffle 16 random teams from the same sport pool and start a new one.</div>
+          </div>
+          <Switch checked={autoRestart} onCheckedChange={(v) => toggleFlag("virtual_championship_auto_restart", v, setAutoRestart, "Auto-restart")} />
         </div>
       </Card>
 
@@ -118,10 +149,17 @@ export function ChampionshipAdminPanel() {
           <Plus className="h-4 w-4 text-primary" />
           <div className="font-black">Schedule new tournament</div>
         </div>
-        <div className="grid gap-3 md:grid-cols-4">
+        <div className="grid gap-3 md:grid-cols-5">
           <div className="md:col-span-2">
             <Label>Name</Label>
             <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Sunday Night Knockout" />
+          </div>
+          <div>
+            <Label>Kind</Label>
+            <select className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm" value={kind} onChange={(e) => setKind(e.target.value as any)}>
+              <option value="championship_virtual">Championship Virtual</option>
+              <option value="championship_football">Championship E-Football</option>
+            </select>
           </div>
           <div>
             <Label>Starts at</Label>

@@ -75,6 +75,7 @@ export type Database = {
           admin_hero_position: string | null
           admin_hero_url: string | null
           allow_rebet: boolean
+          auth_hero_image_url: string | null
           challenge_reward_multiplier: number
           closed_image: string | null
           closed_message: string
@@ -135,6 +136,7 @@ export type Database = {
           nav_bg_url: string | null
           platform_description: string | null
           platform_logo_auth_url: string | null
+          platform_logo_corner_url: string | null
           platform_logo_url: string | null
           platform_logo_voucher_url: string | null
           platform_name: string | null
@@ -173,10 +175,13 @@ export type Database = {
           vip_enabled: boolean
           vip_token_multipliers: Json
           virtual_animation_seconds: number
+          virtual_championship_auto_restart: boolean
           virtual_championship_enabled: boolean
+          virtual_championship_football_enabled: boolean
           virtual_concurrent_rounds: number
           virtual_cycle_last_tick: string | null
           virtual_cycle_running: boolean
+          virtual_football_instant_enabled: boolean
           virtual_lock_window_seconds: number
           virtual_matches_per_round: number
           virtual_max_payout: number | null
@@ -204,6 +209,7 @@ export type Database = {
           admin_hero_position?: string | null
           admin_hero_url?: string | null
           allow_rebet?: boolean
+          auth_hero_image_url?: string | null
           challenge_reward_multiplier?: number
           closed_image?: string | null
           closed_message?: string
@@ -264,6 +270,7 @@ export type Database = {
           nav_bg_url?: string | null
           platform_description?: string | null
           platform_logo_auth_url?: string | null
+          platform_logo_corner_url?: string | null
           platform_logo_url?: string | null
           platform_logo_voucher_url?: string | null
           platform_name?: string | null
@@ -302,10 +309,13 @@ export type Database = {
           vip_enabled?: boolean
           vip_token_multipliers?: Json
           virtual_animation_seconds?: number
+          virtual_championship_auto_restart?: boolean
           virtual_championship_enabled?: boolean
+          virtual_championship_football_enabled?: boolean
           virtual_concurrent_rounds?: number
           virtual_cycle_last_tick?: string | null
           virtual_cycle_running?: boolean
+          virtual_football_instant_enabled?: boolean
           virtual_lock_window_seconds?: number
           virtual_matches_per_round?: number
           virtual_max_payout?: number | null
@@ -333,6 +343,7 @@ export type Database = {
           admin_hero_position?: string | null
           admin_hero_url?: string | null
           allow_rebet?: boolean
+          auth_hero_image_url?: string | null
           challenge_reward_multiplier?: number
           closed_image?: string | null
           closed_message?: string
@@ -393,6 +404,7 @@ export type Database = {
           nav_bg_url?: string | null
           platform_description?: string | null
           platform_logo_auth_url?: string | null
+          platform_logo_corner_url?: string | null
           platform_logo_url?: string | null
           platform_logo_voucher_url?: string | null
           platform_name?: string | null
@@ -431,10 +443,13 @@ export type Database = {
           vip_enabled?: boolean
           vip_token_multipliers?: Json
           virtual_animation_seconds?: number
+          virtual_championship_auto_restart?: boolean
           virtual_championship_enabled?: boolean
+          virtual_championship_football_enabled?: boolean
           virtual_concurrent_rounds?: number
           virtual_cycle_last_tick?: string | null
           virtual_cycle_running?: boolean
+          virtual_football_instant_enabled?: boolean
           virtual_lock_window_seconds?: number
           virtual_matches_per_round?: number
           virtual_max_payout?: number | null
@@ -1554,6 +1569,7 @@ export type Database = {
           restrict_repeat_contender: boolean
           settled_at: string | null
           settled_by: string | null
+          sport: string
           start_time: string
           status: Database["public"]["Enums"]["match_status"]
           updated_at: string
@@ -1591,6 +1607,7 @@ export type Database = {
           restrict_repeat_contender?: boolean
           settled_at?: string | null
           settled_by?: string | null
+          sport?: string
           start_time: string
           status?: Database["public"]["Enums"]["match_status"]
           updated_at?: string
@@ -1628,6 +1645,7 @@ export type Database = {
           restrict_repeat_contender?: boolean
           settled_at?: string | null
           settled_by?: string | null
+          sport?: string
           start_time?: string
           status?: Database["public"]["Enums"]["match_status"]
           updated_at?: string
@@ -2761,6 +2779,7 @@ export type Database = {
           id: string
           logo_url: string | null
           name: string
+          sport: string
         }
         Insert: {
           created_at?: string
@@ -2768,6 +2787,7 @@ export type Database = {
           id?: string
           logo_url?: string | null
           name: string
+          sport?: string
         }
         Update: {
           created_at?: string
@@ -2775,6 +2795,7 @@ export type Database = {
           id?: string
           logo_url?: string | null
           name?: string
+          sport?: string
         }
         Relationships: []
       }
@@ -4070,6 +4091,10 @@ export type Database = {
       auto_draw_due_lotteries: { Args: never; Returns: number }
       auto_resolve_virtual_round: { Args: { _match_id: string }; Returns: Json }
       can_use_gang_chat: { Args: { _user_id: string }; Returns: boolean }
+      championship_autostart: {
+        Args: { p_tournament: string }
+        Returns: undefined
+      }
       championship_start: { Args: { p_tournament: string }; Returns: Json }
       championship_tick: { Args: never; Returns: Json }
       claim_challenge: { Args: { _progress_id: string }; Returns: Json }
@@ -4094,6 +4119,7 @@ export type Database = {
         Args: { _id: string; _note?: string }
         Returns: undefined
       }
+      delete_teams_bulk: { Args: { p_ids: string[] }; Returns: Json }
       dismiss_survey: { Args: { _survey_id: string }; Returns: Json }
       display_name_for: { Args: { _uid: string }; Returns: string }
       draw_lottery: {

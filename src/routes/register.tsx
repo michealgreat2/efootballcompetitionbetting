@@ -46,6 +46,7 @@ export const Route = createFileRoute("/register")({
 
 function RegisterPage() {
   const nav = useNavigate();
+  const brandingHero = useBranding().authHeroUrl;
   const [f, setF] = useState({
     ingame_name: "",
     discord_full_name: "",
@@ -103,7 +104,7 @@ function RegisterPage() {
     <Layout>
       <div className="min-h-[calc(100vh-4rem)] grid grid-cols-1 md:grid-cols-2 bg-background">
         <div className="relative hidden md:block overflow-hidden">
-          <img src={gangsterAsset.url} alt="" className="absolute inset-0 h-full w-full object-cover" loading="eager" />
+          <img src={brandingHero || gangsterAsset.url} alt="" className="absolute inset-0 h-full w-full object-cover" loading="eager" />
           <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-background" />
           <div className="relative z-10 h-full flex flex-col justify-between p-10">
             <div className="flex items-center gap-3">
