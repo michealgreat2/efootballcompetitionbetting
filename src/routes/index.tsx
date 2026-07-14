@@ -353,7 +353,7 @@ function FeaturedGoldenMatches({ matches, bgImage, bgFit, bgPos }: { matches: Ma
       <div className="relative flex items-center gap-2">
         <Trophy className="h-6 w-6 text-amber-300 drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)]" />
         <div>
-          <div className="text-lg md:text-xl font-black tracking-wide text-amber-100 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">Featured Matches</div>
+          <div className="text-xl md:text-2xl font-black tracking-wider text-amber-100 uppercase drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">FEATURED MATCHES</div>
           <div className="text-[10px] uppercase tracking-widest text-amber-100/80 drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">The biggest matchups of the round.</div>
         </div>
       </div>

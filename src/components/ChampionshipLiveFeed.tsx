@@ -120,12 +120,13 @@ export function ChampionshipLiveFeed({ tournamentId, sport, currentStage }: { to
   }
 
   return (
-    <div className="rounded-lg border border-primary/20 bg-background/40 p-3 space-y-3">
-      <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.3em] text-primary font-black">
-        <Radio className="h-3 w-3 animate-pulse text-destructive" />
-        Live feed{sport === "football" ? " · Football" : ""}
-      </div>
-
+    <div className="space-y-3">
+      {(live.length > 0 || pendingNext.length > 0) && (
+        <div className="rounded-lg border border-primary/20 bg-background/40 p-3 space-y-3">
+          <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.3em] text-primary font-black">
+            <Radio className="h-3 w-3 animate-pulse text-destructive" />
+            Live feed{sport === "football" ? " · Football" : ""}
+          </div>
       {live.length > 0 && (
         <section className="space-y-2">
           <div className="text-[10px] uppercase tracking-widest text-destructive font-black flex items-center gap-1">
@@ -184,34 +185,36 @@ export function ChampionshipLiveFeed({ tournamentId, sport, currentStage }: { to
           </div>
         </section>
       )}
+        </div>
+      )}
 
       {completed.length > 0 && (
-        <section className="space-y-1">
-          <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-black flex items-center gap-1">
-            <Trophy className="h-3 w-3" /> Results
+        <div className="rounded-lg border border-primary/20 bg-background/40 p-3">
+          <div className="text-[10px] font-black uppercase tracking-[0.25em] text-primary/80 mb-2 flex items-center gap-1">
+            <Trophy className="h-3 w-3" /> Previous scores
           </div>
-          <div className="max-h-56 overflow-y-auto space-y-1 text-xs">
+          <div className="max-h-64 overflow-y-auto space-y-1.5">
             {completed.map((r) => {
               const a = nameOf(r.participant_a_id), b = nameOf(r.participant_b_id);
               const sa = r.score_a ?? 0, sb = r.score_b ?? 0;
-              const winner = r.winner_id === r.participant_a_id ? a : b;
-              const loser = r.winner_id === r.participant_a_id ? b : a;
               const stage = STAGE_LABEL[r.round_name] ?? r.round_name;
-              const verb = sport === "football"
-                ? (Math.abs(sa - sb) >= 3 ? "thrash" : Math.abs(sa - sb) === 1 ? "edge past" : "sink")
-                : (Math.abs(sa - sb) >= 3 ? "dominate" : "outlast");
               return (
-                <div key={r.id} className="flex items-baseline gap-2 border-b border-border/40 pb-1 last:border-0">
-                  <span className="text-[10px] uppercase tracking-widest text-muted-foreground shrink-0">{stage}</span>
-                  <span className="font-bold">{winner}</span>
-                  <span className="text-muted-foreground">{verb}</span>
-                  <span className="font-bold">{loser}</span>
-                  <span className="ml-auto tabular-nums font-black text-amber-300">{sa}–{sb}</span>
+                <div key={r.id} className="flex items-center justify-between text-[11px] gap-2">
+                  <div className="min-w-0 leading-tight flex-1">
+                    <div className="truncate">
+                      <span className="text-[9px] uppercase tracking-widest text-muted-foreground mr-1">{stage}</span>
+                      {a}
+                    </div>
+                    <div className="truncate text-muted-foreground">{b}</div>
+                  </div>
+                  <div className="font-mono font-black text-primary tabular-nums shrink-0">
+                    {sa}:{sb}
+                  </div>
                 </div>
               );
             })}
           </div>
-        </section>
+        </div>
       )}
     </div>
   );
