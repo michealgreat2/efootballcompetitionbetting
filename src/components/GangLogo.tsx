@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
-import logoUrl from "@/assets/lsl-logo.png";
+import ecbLogo from "@/assets/ecb-logo.png.asset.json";
+const logoUrl = ecbLogo.url;
 
 /**
  * Official ECB platform logo. Renders the uploaded crest image with optional
