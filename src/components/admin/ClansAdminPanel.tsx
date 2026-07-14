@@ -252,12 +252,14 @@ function PlayersTab() {
   const [teams, setTeams] = useState<Team[]>([]);
   const [edit, setEdit] = useState<Partial<Player> | null>(null);
   const [teamFilter, setTeamFilter] = useState<string>("all");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
   async function load() {
     const [{ data: p }, { data: t }] = await Promise.all([
       supabase.from("players").select("*").order("name"),
       supabase.from("teams").select("*").order("name"),
     ]);
     setPlayers((p ?? []) as Player[]); setTeams((t ?? []) as Team[]);
+    setSelected(new Set());
   }
   useEffect(() => { load(); }, []);
   async function save(pl: Partial<Player>) {
@@ -274,28 +276,52 @@ function PlayersTab() {
   }
   async function remove(id: string) {
     if (!await confirm({ title: "Delete this player?", description: "The shooter will be removed from the roster. Leaderboard history already recorded is kept.", tone: "danger", confirmText: "Delete player" })) return;
-    const { error } = await supabase.from("players").delete().eq("id", id);
+    const { error } = await (supabase as any).rpc("delete_players_bulk", { p_ids: [id] });
     if (error) return toast.error(error.message);
     toast.success("Deleted"); load();
   }
   const filtered = teamFilter === "all" ? players : players.filter((p) => p.team_id === teamFilter);
+  const toggleOne = (id: string) => setSelected((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
+  const toggleAll = () => setSelected((s) => s.size === filtered.length ? new Set() : new Set(filtered.map((p) => p.id)));
+  async function bulkRemove() {
+    if (selected.size === 0) return;
+    if (!await confirm({ title: `Delete ${selected.size} player${selected.size === 1 ? "" : "s"}?`, description: "All selected players will be removed from the roster. Leaderboard history is kept.", tone: "danger", confirmText: "Delete selected" })) return;
+    const ids = Array.from(selected);
+    const { error } = await (supabase as any).rpc("delete_players_bulk", { p_ids: ids });
+    if (error) return toast.error(error.message);
+    toast.success(`Deleted ${ids.length} player${ids.length === 1 ? "" : "s"}`); load();
+  }
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between gap-2">
-        <Select value={teamFilter} onValueChange={setTeamFilter}>
-          <SelectTrigger className="w-[200px]"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All teams</SelectItem>
-            {teams.map((t) => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
-          </SelectContent>
-        </Select>
-        <Button size="sm" onClick={() => setEdit({})}><Plus className="h-3 w-3 mr-1" />New Player</Button>
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <div className="flex items-center gap-3 flex-wrap">
+          <Select value={teamFilter} onValueChange={setTeamFilter}>
+            <SelectTrigger className="w-[200px]"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All teams</SelectItem>
+              {teams.map((t) => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <label className="flex items-center gap-2 text-xs text-muted-foreground">
+            <input type="checkbox" checked={filtered.length > 0 && selected.size === filtered.length} onChange={toggleAll} />
+            Select all ({selected.size}/{filtered.length})
+          </label>
+        </div>
+        <div className="flex items-center gap-2">
+          {selected.size > 0 && (
+            <Button size="sm" variant="destructive" onClick={bulkRemove}>
+              <Trash2 className="h-3 w-3 mr-1" />Delete selected ({selected.size})
+            </Button>
+          )}
+          <Button size="sm" onClick={() => setEdit({})}><Plus className="h-3 w-3 mr-1" />New Player</Button>
+        </div>
       </div>
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-[60vh] overflow-y-auto pr-1">
         {filtered.map((p) => {
           const team = teams.find((t) => t.id === p.team_id);
           return (
             <div key={p.id} className="rounded-lg border border-primary/20 bg-card/70 p-3 flex items-center gap-2">
+              <input type="checkbox" checked={selected.has(p.id)} onChange={() => toggleOne(p.id)} className="shrink-0" />
               {p.avatar_url
                 ? <img src={p.avatar_url} alt="" className="h-9 w-9 rounded-full object-cover border border-primary/30" />
                 : <div className="h-9 w-9 rounded-full bg-primary/20 grid place-items-center text-xs font-bold text-primary">{p.name.charAt(0).toUpperCase()}</div>}
