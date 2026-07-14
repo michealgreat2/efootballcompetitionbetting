@@ -6,6 +6,10 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { Crosshair, Trophy, ArrowRight, Radio, Users, History } from "lucide-react";
+import tileInstant from "@/assets/virtual-tile-instant.jpg.asset.json";
+import tileKnockout from "@/assets/virtual-tile-knockout.jpg.asset.json";
+import tileFootballInstant from "@/assets/virtual-tile-football-instant.jpg.asset.json";
+import tileFootballCup from "@/assets/virtual-tile-football-cup.jpg.asset.json";
 // Football variants share the same engine but pull from the football-tagged team pool.
 
 export const Route = createFileRoute("/virtual/")({
@@ -98,6 +102,7 @@ function VirtualHubPage() {
             <ArenaCard
               to="/virtual/instant"
               accent="from-red-500/40 via-red-600/10"
+              image={tileInstant.url}
               icon={<Crosshair className="h-8 w-8" />}
               tag="Instant Virtual"
               title="Instant Shootouts"
@@ -110,6 +115,7 @@ function VirtualHubPage() {
             <ArenaCard
               to="/virtual/championship"
               accent="from-amber-500/40 via-amber-600/10"
+              image={tileKnockout.url}
               icon={<Trophy className="h-8 w-8" />}
               tag="Championship Virtual"
               title="Knockout Tournament"
@@ -129,6 +135,7 @@ function VirtualHubPage() {
             <ArenaCard
               to="/virtual/football-instant"
               accent="from-emerald-500/40 via-emerald-600/10"
+              image={tileFootballInstant.url}
               icon={<Crosshair className="h-8 w-8" />}
               tag="Instant E-Football"
               title="Football Shootouts"
@@ -141,6 +148,7 @@ function VirtualHubPage() {
             <ArenaCard
               to="/virtual/football-championship"
               accent="from-emerald-500/40 via-teal-600/10"
+              image={tileFootballCup.url}
               icon={<Trophy className="h-8 w-8" />}
               tag="Championship E-Football"
               title="Football Knockout Cup"
@@ -177,6 +185,7 @@ function VirtualHubPage() {
 function ArenaCard({
   to,
   accent,
+  image,
   icon,
   tag,
   title,
@@ -189,6 +198,7 @@ function ArenaCard({
 }: {
   to: "/virtual/instant" | "/virtual/championship" | "/virtual/football-instant" | "/virtual/football-championship";
   accent: string;
+  image?: string;
   icon: React.ReactNode;
   tag: string;
   title: string;
@@ -202,6 +212,18 @@ function ArenaCard({
   return (
     <Link to={to} className="group">
       <Card className="relative overflow-hidden h-full glass border-primary/30 p-7 transition-all duration-300 group-hover:border-primary/60 group-hover:-translate-y-1 group-hover:shadow-luxury">
+        {/* Seed background image */}
+        {image && (
+          <>
+            <img
+              src={image}
+              alt=""
+              loading="lazy"
+              className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-40 transition-transform duration-700 group-hover:scale-105"
+            />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background via-background/85 to-background/50" />
+          </>
+        )}
         {/* Ambient gradient */}
         <div className={`pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full bg-gradient-to-br ${accent} to-transparent blur-3xl opacity-70`} />
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-gold opacity-70" />

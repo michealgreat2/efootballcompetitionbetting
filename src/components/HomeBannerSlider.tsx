@@ -5,20 +5,21 @@ import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carouse
 import Autoplay from "embla-carousel-autoplay";
 import { ArrowRight } from "lucide-react";
 
-/** Wide auto-sliding promo banners shown at the top of the home page. */
-export function HomeBannerSlider({ embedded = false }: { embedded?: boolean }) {
+/** Wide auto-sliding promo banners shown at the top of a page. */
+export function HomeBannerSlider({ embedded = false, placement = "home" }: { embedded?: boolean; placement?: string }) {
   const [items, setItems] = useState<any[]>([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    supabase
+    (supabase as any)
       .from("home_banners")
       .select("*")
       .eq("is_active", true)
+      .eq("placement", placement)
       .order("sort_order", { ascending: true })
       .order("created_at", { ascending: false })
-      .then(({ data }) => setItems(data ?? []));
-  }, []);
+      .then(({ data }: { data: any }) => setItems(data ?? []));
+  }, [placement]);
 
   if (items.length === 0) return null;
 
