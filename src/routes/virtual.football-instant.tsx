@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { ArrowLeft, Trophy, Loader2, CircleDot, Ticket, Radio, History, ChevronLeft } from "lucide-react";
+import { Trophy, Loader2, CircleDot, Ticket, Radio, History, ChevronLeft } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { TeamLogo } from "@/components/TeamLogo";
 
