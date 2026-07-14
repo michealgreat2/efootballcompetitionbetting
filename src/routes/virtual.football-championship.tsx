@@ -40,7 +40,7 @@ function FootballChampPage() {
   useEffect(() => {
     const load = async () => {
       const sb = supabase as any;
-      sb.rpc("championship_tick").catch(() => {});
+      try { await sb.rpc("championship_tick"); } catch { /* noop */ }
       const { data: s } = await sb.from("app_settings").select("virtual_championship_football_enabled").eq("id", 1).maybeSingle();
       setEnabled(!!s?.virtual_championship_football_enabled);
       const { data: t } = await sb
