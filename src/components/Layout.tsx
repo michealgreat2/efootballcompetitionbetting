@@ -7,6 +7,7 @@ import { useAuth, ROLE_COLORS, ROLE_LABELS } from "@/contexts/AuthContext";
 import { NotificationBell } from "@/components/NotificationBell";
 import { LevelUpModal } from "@/components/Spotlight";
 import { GlobalWinAnimation } from "@/components/GlobalWinAnimation";
+import { GlobalLossAnimation } from "@/components/GlobalLossAnimation";
 import { BetSuccessPopout } from "@/components/BetSuccessPopout";
 import { SurveyPopout } from "@/components/SurveyPopout";
 import { PollPopout } from "@/components/PollPopout";
@@ -199,6 +200,7 @@ export const Layout = ({ children }: { children: ReactNode }) => {
       <main className={`relative lg:pl-0 overflow-x-hidden ${isHome ? "pl-0" : "pl-16"}`}>{children}</main>
       <LevelUpModal />
       <GlobalWinAnimation />
+      <GlobalLossAnimation />
       <BetSuccessPopout />
       <SurveyPopout />
       <PollPopout />
