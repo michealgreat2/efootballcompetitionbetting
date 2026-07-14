@@ -14,7 +14,7 @@ import { PushPermissionPrompt } from "@/components/PushPermissionPrompt";
 import { ReactNode, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLocation } from "@tanstack/react-router";
-import lslPlatformBg from "@/assets/lsl-bg-nebula.png.asset.json";
+import lslPlatformBg from "@/assets/ecb-nebula-bg.jpg.asset.json";
 import { useBranding } from "@/lib/branding";
 
 // Site-wide background ticker so virtual rounds keep advancing even when
