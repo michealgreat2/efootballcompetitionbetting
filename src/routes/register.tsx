@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Layout } from "@/components/Layout";
+import gangsterAsset from "@/assets/auth-gangster.jpg.asset.json";
 
 export const Route = createFileRoute("/register")({
   head: () => ({
@@ -81,10 +82,36 @@ function RegisterPage() {
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-12 max-w-xl">
-        <Card className="p-8 backdrop-blur-xl bg-card/60 border-primary/30">
-          <h1 className="text-3xl font-bold text-primary mb-1">Join the League</h1>
-          <p className="text-sm text-muted-foreground mb-6">Pick your gang. Earn your tokens.</p>
+      <div className="min-h-[calc(100vh-4rem)] grid grid-cols-1 md:grid-cols-2 bg-background">
+        <div className="relative hidden md:block overflow-hidden">
+          <img src={gangsterAsset.url} alt="" className="absolute inset-0 h-full w-full object-cover" loading="eager" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-background" />
+          <div className="relative z-10 h-full flex flex-col justify-between p-10">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-gradient-gold grid place-items-center shadow-gold">
+                <span className="font-black text-background">L</span>
+              </div>
+              <div className="leading-tight">
+                <div className="font-black tracking-wide">LOMITA SHOOTERS</div>
+                <div className="text-[10px] uppercase tracking-[0.35em] text-primary/80">League</div>
+              </div>
+            </div>
+            <div className="max-w-sm">
+              <h2 className="font-display text-4xl font-black leading-tight">
+                Private. <span className="gradient-gold-text">Premium.</span> Yours.
+              </h2>
+              <p className="text-sm text-muted-foreground mt-3">
+                Pick your gang, claim starter tokens, and step into the shootouts. Built for the discerning bettor.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center justify-center p-6 sm:p-10 overflow-y-auto">
+        <div className="w-full max-w-xl">
+          <div className="mb-6">
+            <h1 className="font-display text-4xl font-black gradient-gold-text">Open an account</h1>
+            <p className="text-sm text-muted-foreground mt-1">Pick your gang. Earn your tokens.</p>
+          </div>
           <form onSubmit={submit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2"><Label>In-game full name *</Label><Input required maxLength={80} value={f.ingame_name} onChange={(e) => set("ingame_name", e.target.value)} /></div>
             <div className="md:col-span-2"><Label>Discord full name *</Label><Input required maxLength={80} value={f.discord_full_name} onChange={(e) => set("discord_full_name", e.target.value)} /></div>
@@ -127,7 +154,8 @@ function RegisterPage() {
             <Button type="submit" disabled={loading} className="md:col-span-2 w-full">{loading ? "Creating..." : "Create Account"}</Button>
           </form>
           <p className="mt-4 text-sm text-center">Already a member? <Link to="/login" className="text-primary hover:underline">Sign in</Link></p>
-        </Card>
+        </div>
+        </div>
       </div>
     </Layout>
   );
