@@ -1418,7 +1418,7 @@ async function settleFutureBets(matchId: string, winningOddIds: string[], winnin
   const { data: sels } = await supabase.from("bet_selections").select("*").eq("match_id", matchId);
   if (!sels || sels.length === 0) return;
   for (const s of sels) {
-    await supabase.from("bet_selections").update({ result: winningOddIds.includes(s.odd_id) ? "won" : "lost" }).eq("id", s.id);
+    await supabase.from("bet_selections").update({ result: s.odd_id && winningOddIds.includes(s.odd_id) ? "won" : "lost" }).eq("id", s.id);
   }
   const betIds = Array.from(new Set(sels.map((s: any) => s.bet_id)));
   for (const bid of betIds) {
