@@ -4094,6 +4094,7 @@ export type Database = {
       auto_draw_due_lotteries: { Args: never; Returns: number }
       auto_resolve_virtual_round: { Args: { _match_id: string }; Returns: Json }
       can_use_gang_chat: { Args: { _user_id: string }; Returns: boolean }
+      cancel_championship_bet: { Args: { p_tournament: string }; Returns: Json }
       champ_gen_event: {
         Args: { p_match_id: string; p_minute: number; p_sport: string }
         Returns: undefined
@@ -4126,6 +4127,7 @@ export type Database = {
         Args: { _id: string; _note?: string }
         Returns: undefined
       }
+      delete_players_bulk: { Args: { p_ids: string[] }; Returns: Json }
       delete_teams_bulk: { Args: { p_ids: string[] }; Returns: Json }
       dismiss_survey: { Args: { _survey_id: string }; Returns: Json }
       display_name_for: { Args: { _uid: string }; Returns: string }
