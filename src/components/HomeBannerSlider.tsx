@@ -32,13 +32,15 @@ export function HomeBannerSlider({ embedded = false, placement = "home" }: { emb
   const carousel = (
     <Carousel opts={{ loop: true }} plugins={[Autoplay({ delay: 4500, stopOnInteraction: false })]}>
         <CarouselContent>
-          {items.map((b) => (
+          {items.map((b) => {
+            const hasLink = !!b.link_url?.trim();
+            const Wrapper: any = hasLink ? "button" : "div";
+            const wrapperProps = hasLink
+              ? { type: "button", onClick: () => go(b.link_url), className: "group relative block w-full overflow-hidden rounded-2xl border border-primary/40 text-left shadow-[0_0_40px_-16px_rgba(212,175,55,0.6)] cursor-pointer" }
+              : { className: "group relative block w-full overflow-hidden rounded-2xl border border-primary/40 text-left shadow-[0_0_40px_-16px_rgba(212,175,55,0.6)]" };
+            return (
             <CarouselItem key={b.id}>
-              <button
-                type="button"
-                onClick={() => go(b.link_url)}
-                className="group relative block w-full overflow-hidden rounded-2xl border border-primary/40 text-left shadow-[0_0_40px_-16px_rgba(212,175,55,0.6)]"
-              >
+              <Wrapper {...wrapperProps}>
                 <div className="relative h-32 sm:h-40 md:h-48 w-full">
                   {b.image_url && (
                     <img src={b.image_url} alt={b.title || ""} className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
@@ -49,14 +51,16 @@ export function HomeBannerSlider({ embedded = false, placement = "home" }: { emb
                       {b.title && <div className="text-lg sm:text-2xl md:text-3xl font-extrabold gradient-gold-text uppercase leading-tight truncate">{b.title}</div>}
                       {b.subtitle && <div className="mt-1 text-xs sm:text-sm text-muted-foreground line-clamp-2">{b.subtitle}</div>}
                     </div>
-                    <span className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-gradient-gold px-4 py-2 text-xs sm:text-sm font-bold text-background shadow-gold transition-transform group-hover:scale-105">
-                      {b.cta_label || "Click here"} <ArrowRight className="h-4 w-4" />
-                    </span>
+                    {hasLink && (
+                      <span className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-gradient-gold px-4 py-2 text-xs sm:text-sm font-bold text-background shadow-gold transition-transform group-hover:scale-105">
+                        {b.cta_label || "Click here"} <ArrowRight className="h-4 w-4" />
+                      </span>
+                    )}
                   </div>
                 </div>
-              </button>
+              </Wrapper>
             </CarouselItem>
-          ))}
+          );})}
         </CarouselContent>
     </Carousel>
   );
