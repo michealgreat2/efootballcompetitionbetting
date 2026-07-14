@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Target, X, Swords, Lock, CheckCircle2 } from "lucide-react";
+import { Trophy, Target, X, Swords, Lock, CheckCircle2, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 type Kind = "outright" | "reach_final" | "reach_semi" | "reach_quarter" | "eliminated_at" | "match_winner";
@@ -95,16 +95,49 @@ export function ChampionshipBetPanel({
     setExisting({ id: "new", kind: params.kind, stake, odds: ODDS[params.kind] });
   };
 
+  const cancelPick = async () => {
+    if (!existing) return;
+    setBusy(true);
+    const { error } = await (supabase as any).rpc("cancel_championship_bet", { p_tournament: tournamentId });
+    setBusy(false);
+    if (error) return toast.error(error.message);
+    toast.success("Pick cancelled · stake refunded");
+    setExisting(null);
+  };
+
   const teamList = useMemo(() => teamIds.map((id) => teams[id]).filter(Boolean) as Team[], [teamIds, teams]);
+
+  if (existing && status === "booking") {
+    return (
+      <Card className="glass p-4 border-emerald-500/40 space-y-3">
+        <div className="flex items-center gap-2 text-emerald-300 font-black">
+          <CheckCircle2 className="h-4 w-4" /> Your championship pick is in
+        </div>
+        <div className="text-xs text-muted-foreground">
+          Stake <span className="text-foreground font-bold">{existing.stake} LSL</span> · potential payout{" "}
+          <span className="text-amber-300 font-bold">{(existing.stake * existing.odds).toFixed(0)} LSL</span>.
+          Change or remove your pick anytime while booking is open.
+        </div>
+        <div className="flex items-center gap-2">
+          <Button size="sm" variant="outline" disabled={busy} onClick={cancelPick} className="border-primary/40">
+            <Pencil className="h-3 w-3 mr-1" /> Change pick
+          </Button>
+          <Button size="sm" variant="destructive" disabled={busy} onClick={cancelPick}>
+            <Trash2 className="h-3 w-3 mr-1" /> Cancel bet
+          </Button>
+        </div>
+      </Card>
+    );
+  }
 
   if (existing) {
     return (
       <Card className="glass p-4 border-emerald-500/40 space-y-2">
         <div className="flex items-center gap-2 text-emerald-300 font-black">
-          <CheckCircle2 className="h-4 w-4" /> Your championship pick is locked in
+          <Lock className="h-4 w-4" /> Pick locked · booking closed
         </div>
         <div className="text-xs text-muted-foreground">
-          One bet per championship — potential payout <span className="text-amber-300 font-bold">{(existing.stake * existing.odds).toFixed(0)} LSL</span> if it lands.
+          Potential payout <span className="text-amber-300 font-bold">{(existing.stake * existing.odds).toFixed(0)} LSL</span> if it lands.
         </div>
       </Card>
     );
