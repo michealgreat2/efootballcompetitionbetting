@@ -9,6 +9,26 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Layout } from "@/components/Layout";
 import gangsterAsset from "@/assets/auth-gangster.jpg.asset.json";
+import { useBranding } from "@/lib/branding";
+
+function RegisterBrand() {
+  const b = useBranding();
+  return (
+    <>
+      {b.logoAuthUrl ? (
+        <img src={b.logoAuthUrl} alt={b.name} className="h-10 w-10 rounded-full object-cover shadow-gold" />
+      ) : (
+        <div className="h-10 w-10 rounded-full bg-gradient-gold grid place-items-center shadow-gold">
+          <span className="font-black text-background">{(b.name || "L").charAt(0)}</span>
+        </div>
+      )}
+      <div className="leading-tight">
+        <div className="font-black tracking-wide uppercase">{b.tagline || b.name}</div>
+        <div className="text-[10px] uppercase tracking-[0.35em] text-primary/80">{b.name}</div>
+      </div>
+    </>
+  );
+}
 
 export const Route = createFileRoute("/register")({
   head: () => ({
