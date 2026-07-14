@@ -45,7 +45,6 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as VirtualInstantRouteImport } from './routes/virtual.instant'
 import { Route as VirtualHistoryRouteImport } from './routes/virtual.history'
-import { Route as VirtualChampionshipRouteImport } from './routes/virtual.championship'
 import { Route as TicketIdRouteImport } from './routes/ticket.$id'
 import { Route as MatchesMatchIdRouteImport } from './routes/matches.$matchId'
 import { Route as ApiPublicVirtualTickRouteImport } from './routes/api/public/virtual-tick'
@@ -233,11 +232,6 @@ const VirtualHistoryRoute = VirtualHistoryRouteImport.update({
   path: '/history',
   getParentRoute: () => VirtualRoute,
 } as any)
-const VirtualChampionshipRoute = VirtualChampionshipRouteImport.update({
-  id: '/championship',
-  path: '/championship',
-  getParentRoute: () => VirtualRoute,
-} as any)
 const TicketIdRoute = TicketIdRouteImport.update({
   id: '/ticket/$id',
   path: '/ticket/$id',
@@ -308,7 +302,6 @@ export interface FileRoutesByFullPath {
   '/withdraw': typeof WithdrawRoute
   '/matches/$matchId': typeof MatchesMatchIdRoute
   '/ticket/$id': typeof TicketIdRoute
-  '/virtual/championship': typeof VirtualChampionshipRoute
   '/virtual/history': typeof VirtualHistoryRoute
   '/virtual/instant': typeof VirtualInstantRoute
   '/api/public/virtual-tick': typeof ApiPublicVirtualTickRoute
@@ -353,7 +346,6 @@ export interface FileRoutesByTo {
   '/withdraw': typeof WithdrawRoute
   '/matches/$matchId': typeof MatchesMatchIdRoute
   '/ticket/$id': typeof TicketIdRoute
-  '/virtual/championship': typeof VirtualChampionshipRoute
   '/virtual/history': typeof VirtualHistoryRoute
   '/virtual/instant': typeof VirtualInstantRoute
   '/api/public/virtual-tick': typeof ApiPublicVirtualTickRoute
@@ -399,7 +391,6 @@ export interface FileRoutesById {
   '/withdraw': typeof WithdrawRoute
   '/matches/$matchId': typeof MatchesMatchIdRoute
   '/ticket/$id': typeof TicketIdRoute
-  '/virtual/championship': typeof VirtualChampionshipRoute
   '/virtual/history': typeof VirtualHistoryRoute
   '/virtual/instant': typeof VirtualInstantRoute
   '/api/public/virtual-tick': typeof ApiPublicVirtualTickRoute
@@ -446,7 +437,6 @@ export interface FileRouteTypes {
     | '/withdraw'
     | '/matches/$matchId'
     | '/ticket/$id'
-    | '/virtual/championship'
     | '/virtual/history'
     | '/virtual/instant'
     | '/api/public/virtual-tick'
@@ -491,7 +481,6 @@ export interface FileRouteTypes {
     | '/withdraw'
     | '/matches/$matchId'
     | '/ticket/$id'
-    | '/virtual/championship'
     | '/virtual/history'
     | '/virtual/instant'
     | '/api/public/virtual-tick'
@@ -536,7 +525,6 @@ export interface FileRouteTypes {
     | '/withdraw'
     | '/matches/$matchId'
     | '/ticket/$id'
-    | '/virtual/championship'
     | '/virtual/history'
     | '/virtual/instant'
     | '/api/public/virtual-tick'
@@ -841,13 +829,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VirtualHistoryRouteImport
       parentRoute: typeof VirtualRoute
     }
-    '/virtual/championship': {
-      id: '/virtual/championship'
-      path: '/championship'
-      fullPath: '/virtual/championship'
-      preLoaderRoute: typeof VirtualChampionshipRouteImport
-      parentRoute: typeof VirtualRoute
-    }
     '/ticket/$id': {
       id: '/ticket/$id'
       path: '/ticket/$id'
@@ -905,13 +886,11 @@ const MatchesRouteWithChildren =
   MatchesRoute._addFileChildren(MatchesRouteChildren)
 
 interface VirtualRouteChildren {
-  VirtualChampionshipRoute: typeof VirtualChampionshipRoute
   VirtualHistoryRoute: typeof VirtualHistoryRoute
   VirtualInstantRoute: typeof VirtualInstantRoute
 }
 
 const VirtualRouteChildren: VirtualRouteChildren = {
-  VirtualChampionshipRoute: VirtualChampionshipRoute,
   VirtualHistoryRoute: VirtualHistoryRoute,
   VirtualInstantRoute: VirtualInstantRoute,
 }
