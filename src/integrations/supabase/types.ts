@@ -2485,6 +2485,7 @@ export type Database = {
           created_by: string
           error: string | null
           id: string
+          image: string | null
           last_active_days: number | null
           link: string
           locale: string
@@ -2504,6 +2505,7 @@ export type Database = {
           created_by: string
           error?: string | null
           id?: string
+          image?: string | null
           last_active_days?: number | null
           link?: string
           locale?: string
@@ -2523,6 +2525,7 @@ export type Database = {
           created_by?: string
           error?: string | null
           id?: string
+          image?: string | null
           last_active_days?: number | null
           link?: string
           locale?: string
