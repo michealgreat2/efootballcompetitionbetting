@@ -4305,6 +4305,7 @@ export type Database = {
       refund_shop_redemption: { Args: { _id: string }; Returns: Json }
       resettle_won_bets: { Args: never; Returns: number }
       resolve_auto_championship: { Args: never; Returns: number }
+      resolve_open_bets: { Args: never; Returns: number }
       resolve_special_id: {
         Args: { _special_id: string }
         Returns: {

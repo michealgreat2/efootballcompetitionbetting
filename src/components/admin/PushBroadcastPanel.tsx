@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { broadcastPush, getPushSubscriberCount, listScheduledPushes, cancelScheduledPush } from "@/lib/push-admin.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { ImageSettingControl } from "@/components/admin/ImageSettingControl";
 
 const roles = ["any", "viewer", "shooter", "gang_leader", "registered", "moderator", "admin", "sponsor"];
 const activityOptions = [
@@ -246,14 +247,14 @@ export function PushBroadcastPanel() {
           <label className="text-[10px] uppercase text-muted-foreground">Link (optional)</label>
           <Input value={link} onChange={(e) => setLink(e.target.value)} placeholder="/matches" />
         </div>
-        <div className="space-y-1">
-          <label className="text-[10px] uppercase text-muted-foreground">Image URL (optional)</label>
-          <Input value={image} onChange={(e) => setImage(e.target.value)} placeholder="https://.../banner.jpg" />
-          <p className="text-[10px] text-muted-foreground">Shown as a large picture inside the device notification (Android/Chrome/desktop).</p>
-          {image && (
-            <img src={image} alt="preview" className="mt-1 rounded-md max-h-32 object-cover border border-border/50" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
-          )}
-        </div>
+        <ImageSettingControl
+          label="Notification image (optional)"
+          value={image}
+          onChange={(url) => setImage(url ?? "")}
+          showFitControls={false}
+          aspect="16 / 9"
+          help="Upload from your device or paste a URL. Shown as a large picture inside the notification on Android/Chrome/desktop."
+        />
 
         <div className="space-y-2 rounded-lg border border-border/60 p-3">
           <div className="flex items-center gap-2">
