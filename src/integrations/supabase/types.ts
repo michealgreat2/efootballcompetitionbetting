@@ -4168,6 +4168,7 @@ export type Database = {
         Args: { p_tournament: string }
         Returns: undefined
       }
+      championship_bootstrap_if_needed: { Args: never; Returns: number }
       championship_start: { Args: { p_tournament: string }; Returns: Json }
       championship_tick: { Args: never; Returns: Json }
       claim_challenge: { Args: { _progress_id: string }; Returns: Json }
