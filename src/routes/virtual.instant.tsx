@@ -842,12 +842,13 @@ function LiveMatchTicker({ match, animSec, sport = "gang" }: { match: VirtualMat
       setBlasts((prev) => prev.filter((b) => now - b.born < 900));
 
       const surfaced: string[] = [];
+      const LINES = isFoot ? GOAL_LINES : KILL_LINES;
       for (let i = 0; i < fh; i++) {
-        const line = KILL_LINES[Math.abs((match.id.charCodeAt(i % match.id.length) + i * 7) % KILL_LINES.length)];
+        const line = LINES[Math.abs((match.id.charCodeAt(i % match.id.length) + i * 7) % LINES.length)];
         surfaced.unshift(`${match.home_team?.name}: ${line}`);
       }
       for (let i = 0; i < fa; i++) {
-        const line = KILL_LINES[Math.abs((match.id.charCodeAt((i + 5) % match.id.length) + i * 11) % KILL_LINES.length)];
+        const line = LINES[Math.abs((match.id.charCodeAt((i + 5) % match.id.length) + i * 11) % LINES.length)];
         surfaced.unshift(`${match.away_team?.name}: ${line}`);
       }
       setFeed(surfaced.slice(0, 4));
@@ -855,10 +856,10 @@ function LiveMatchTicker({ match, animSec, sport = "gang" }: { match: VirtualMat
     tick();
     const t = setInterval(tick, 220);
     return () => clearInterval(t);
-  }, [lockMs, endMs, match.id, match.status, match.home_team?.name, match.away_team?.name]);
+  }, [lockMs, endMs, match.id, match.status, match.home_team?.name, match.away_team?.name, isFoot]);
 
-  const homeName = match.home_team?.name ?? "Gang A";
-  const awayName = match.away_team?.name ?? "Gang B";
+  const homeName = match.home_team?.name ?? (isFoot ? "Home" : "Gang A");
+  const awayName = match.away_team?.name ?? (isFoot ? "Away" : "Gang B");
   const aliveH = fighters.filter((f) => f.side === "h" && f.alive).length;
   const aliveA = fighters.filter((f) => f.side === "a" && f.alive).length;
   const { h: liveH, a: liveA } = useLiveScore(match, animSec);
@@ -866,6 +867,29 @@ function LiveMatchTicker({ match, animSec, sport = "gang" }: { match: VirtualMat
   return (
     <Card className="virtual-panel overflow-hidden shadow-gold p-0">
       <div className="relative w-full aspect-[16/10] overflow-hidden bg-[#07090a]">
+        {isFoot ? (
+          <>
+            <div
+              className="absolute inset-0"
+              style={{
+                backgroundImage: `
+                  radial-gradient(circle at 50% 50%, rgba(20,90,45,0.55), transparent 65%),
+                  repeating-linear-gradient(90deg, rgba(255,255,255,0.05) 0 8%, rgba(0,0,0,0.15) 8% 16%),
+                  linear-gradient(180deg, #0b3a1e 0%, #062815 100%)`,
+              }}
+            />
+            {/* pitch markings */}
+            <div className="absolute inset-2 border border-white/25 rounded-sm" />
+            <div className="absolute left-1/2 top-2 bottom-2 w-px bg-white/25" />
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-16 w-16 rounded-full border border-white/25" />
+            {/* penalty boxes */}
+            <div className="absolute top-1/2 -translate-y-1/2 left-2 h-2/3 w-[14%] border border-white/25 border-l-0" />
+            <div className="absolute top-1/2 -translate-y-1/2 right-2 h-2/3 w-[14%] border border-white/25 border-r-0" />
+            {/* goals */}
+            <div className="absolute top-1/2 -translate-y-1/2 left-0 h-[22%] w-[1.5%] bg-white/40" />
+            <div className="absolute top-1/2 -translate-y-1/2 right-0 h-[22%] w-[1.5%] bg-white/40" />
+          </>
+        ) : (
         <div
           className="absolute inset-0"
           style={{
@@ -877,20 +901,25 @@ function LiveMatchTicker({ match, animSec, sport = "gang" }: { match: VirtualMat
             linear-gradient(180deg, #14100c 0%, #08060a 100%)`,
           }}
         />
+        )}
+        {!isFoot && (
+          <>
         <div className="absolute bg-black/70 border border-white/10 rounded-sm" style={{ left: "18%", top: "18%", width: "14%", height: "22%" }} />
         <div className="absolute bg-black/70 border border-white/10 rounded-sm" style={{ left: "42%", top: "55%", width: "16%", height: "20%" }} />
         <div className="absolute bg-black/70 border border-white/10 rounded-sm" style={{ left: "68%", top: "20%", width: "12%", height: "28%" }} />
         <div className="absolute bg-black/70 border border-white/10 rounded-sm" style={{ left: "8%", top: "70%", width: "12%", height: "16%" }} />
         <div className="absolute left-1/2 top-2 bottom-2 w-px bg-gradient-to-b from-transparent via-amber-400/40 to-transparent" />
+          </>
+        )}
 
         <div className="absolute top-1 left-2 text-[9px] font-black tracking-widest text-red-400 drop-shadow">
-          RED · {homeName.toUpperCase()}
+          {isFoot ? "HOME" : "RED"} · {homeName.toUpperCase()}
         </div>
         <div className="absolute top-1 right-2 text-[9px] font-black tracking-widest text-sky-400 drop-shadow">
-          {awayName.toUpperCase()} · BLUE
+          {awayName.toUpperCase()} · {isFoot ? "AWAY" : "BLUE"}
         </div>
-        <div className="absolute bottom-1 left-2 text-[9px] font-mono text-red-300/80">ALIVE {aliveH}</div>
-        <div className="absolute bottom-1 right-2 text-[9px] font-mono text-sky-300/80">ALIVE {aliveA}</div>
+        <div className="absolute bottom-1 left-2 text-[9px] font-mono text-red-300/80">{isFoot ? `ON ${aliveH}` : `ALIVE ${aliveH}`}</div>
+        <div className="absolute bottom-1 right-2 text-[9px] font-mono text-sky-300/80">{isFoot ? `ON ${aliveA}` : `ALIVE ${aliveA}`}</div>
 
         <svg className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none" viewBox="0 0 100 100">
           {tracers.map((t, i) => (
@@ -901,18 +930,19 @@ function LiveMatchTicker({ match, animSec, sport = "gang" }: { match: VirtualMat
               x2={t.x2}
               y2={t.y2}
               stroke={t.side === "h" ? "#ff5252" : "#4dd2ff"}
-              strokeWidth="0.35"
+              strokeWidth={isFoot ? "0.25" : "0.35"}
               strokeLinecap="round"
-              opacity={0.85}
-              style={{ filter: `drop-shadow(0 0 1.2px ${t.side === "h" ? "#ff5252" : "#4dd2ff"})` }}
+              opacity={isFoot ? 0.55 : 0.85}
+              strokeDasharray={isFoot ? "1 1.5" : undefined}
+              style={{ filter: `drop-shadow(0 0 ${isFoot ? "0.6" : "1.2"}px ${t.side === "h" ? "#ff5252" : "#4dd2ff"})` }}
             />
           ))}
         </svg>
 
         {blasts.map((b, i) => (
           <div key={`${b.born}-${i}`} className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none" style={{ left: `${b.x}%`, top: `${b.y}%` }}>
-            <div className="rounded-full bg-amber-300/80 animate-ping" style={{ width: b.size, height: b.size, animationDuration: "0.75s" }} />
-            <div className="absolute inset-1 rounded-full bg-orange-500/70 blur-sm" />
+            <div className={`rounded-full ${isFoot ? "bg-white/70" : "bg-amber-300/80"} animate-ping`} style={{ width: b.size, height: b.size, animationDuration: "0.75s" }} />
+            <div className={`absolute inset-1 rounded-full ${isFoot ? "bg-emerald-300/70" : "bg-orange-500/70"} blur-sm`} />
           </div>
         ))}
 
@@ -938,7 +968,7 @@ function LiveMatchTicker({ match, animSec, sport = "gang" }: { match: VirtualMat
       <div className="p-3 bg-gradient-to-r from-black/80 via-black/60 to-black/80">
         <div className="flex items-center justify-between mb-2">
           <div className="text-[10px] uppercase tracking-widest text-destructive font-bold flex items-center gap-1">
-            <Radio className="h-3 w-3 animate-pulse" /> Live shootout
+            <Radio className="h-3 w-3 animate-pulse" /> {isFoot ? "Live match" : "Live shootout"}
           </div>
           <div className="font-mono font-black text-2xl tabular-nums text-primary tracking-widest">
             {liveH} - {liveA}
@@ -948,10 +978,10 @@ function LiveMatchTicker({ match, animSec, sport = "gang" }: { match: VirtualMat
           <div className="h-full bg-gradient-to-r from-red-500 via-amber-400 to-sky-400 transition-all" style={{ width: `${progress * 100}%` }} />
         </div>
         <div className="space-y-1 min-h-[56px]">
-          {feed.length === 0 && <div className="text-[10px] text-muted-foreground">Gangs locking & loading…</div>}
+          {feed.length === 0 && <div className="text-[10px] text-muted-foreground">{isFoot ? "Players warming up on the pitch…" : "Gangs locking & loading…"}</div>}
           {feed.map((line, i) => (
             <div key={i} className="text-[11px] text-foreground/90 animate-fade-in flex items-start gap-1.5">
-              <span className="text-destructive">▸</span>
+              <span className={isFoot ? "text-emerald-400" : "text-destructive"}>▸</span>
               {line}
             </div>
           ))}
