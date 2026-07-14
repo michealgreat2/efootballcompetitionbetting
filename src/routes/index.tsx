@@ -43,7 +43,7 @@ export const Route = createFileRoute("/")({
     ],
     links: [
       { rel: "canonical", href: "https://lslonlinebetting.lovable.app/" },
-      { rel: "preload", as: "image", href: hero, fetchpriority: "high" },
+      { rel: "preload", as: "image", href: hero, fetchPriority: "high" },
     ],
   }),
   component: Index,
