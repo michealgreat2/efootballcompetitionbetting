@@ -53,24 +53,69 @@ export function BracketBoard({ tournamentId, currentStage }: { tournamentId: str
     return () => { cancelled = true; (supabase as any).removeChannel(ch); };
   }, [tournamentId]);
 
+  // Slots per round: R16=8, QF=4, SF=2, F=1
+  const slotCounts = [8, 4, 2, 1];
   return (
-    <div className="grid gap-3 md:grid-cols-4">
-      {STAGES.map((s) => {
-        const rows = matches.filter((m) => m.round_name === s.name);
-        const isCurrent = currentStage === s.name;
-        return (
-          <div key={s.name} className="space-y-2">
-            <div className={`text-[10px] uppercase tracking-[0.3em] font-black text-center py-1.5 rounded-md ${isCurrent ? "bg-primary/20 text-primary" : "text-muted-foreground"}`}>
-              {s.label}
-            </div>
-            {rows.length === 0 ? (
-              <div className="h-16 rounded-md border border-dashed border-border/40 grid place-items-center text-[10px] text-muted-foreground">TBD</div>
-            ) : (
-              rows.map((m) => <BracketCard key={m.id} m={m} teams={teams} isFinal={s.name === "F"} />)
-            )}
-          </div>
-        );
-      })}
+    <div className="overflow-x-auto -mx-2 px-2">
+      <div className="min-w-[720px]">
+        {/* Column headers */}
+        <div className="grid gap-3 mb-2" style={{ gridTemplateColumns: "repeat(4, minmax(0,1fr))" }}>
+          {STAGES.map((s) => {
+            const isCurrent = currentStage === s.name;
+            return (
+              <div
+                key={s.name}
+                className={`text-[10px] uppercase tracking-[0.3em] font-black text-center py-1.5 rounded-md ${isCurrent ? "bg-primary/20 text-primary" : "text-muted-foreground"}`}
+              >
+                {s.label}
+              </div>
+            );
+          })}
+        </div>
+        {/* Tree grid: 4 round columns, matches stacked with connectors */}
+        <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(4, minmax(0,1fr))" }}>
+          {STAGES.map((s, colIdx) => {
+            const rows = matches.filter((m) => m.round_name === s.name).sort((a, b) => a.slot - b.slot);
+            const count = slotCounts[colIdx];
+            const isLast = colIdx === STAGES.length - 1;
+            return (
+              <div key={s.name} className="flex flex-col justify-around gap-3 relative">
+                {Array.from({ length: count }).map((_, idx) => {
+                  const m = rows[idx];
+                  const isFinal = s.name === "F";
+                  return (
+                    <div
+                      key={m?.id ?? `${s.name}-${idx}`}
+                      className="relative flex-1 flex items-center"
+                    >
+                      <div className="w-full">
+                        {m ? (
+                          <BracketCard m={m} teams={teams} isFinal={isFinal} />
+                        ) : (
+                          <div className="rounded-md border border-dashed border-border/40 h-14 grid place-items-center text-[10px] text-muted-foreground bg-card/20">
+                            TBD
+                          </div>
+                        )}
+                        {/* Connector to next round */}
+                        {!isLast && (
+                          <span
+                            aria-hidden
+                            className={`pointer-events-none absolute top-1/2 -right-3 h-1/2 w-3 border-primary/40 ${
+                              idx % 2 === 0
+                                ? "border-t border-r rounded-tr-md -translate-y-full"
+                                : "border-b border-r rounded-br-md"
+                            }`}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }
