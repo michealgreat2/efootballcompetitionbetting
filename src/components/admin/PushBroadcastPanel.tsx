@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Bell, Filter, Send, Users, Clock, CalendarClock, X, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Bell, Filter, Send, Users, Clock, CalendarClock, X, CheckCircle2, AlertTriangle, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { broadcastPush, getPushSubscriberCount, listScheduledPushes, cancelScheduledPush } from "@/lib/push-admin.functions";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const roles = ["any", "viewer", "shooter", "gang_leader", "registered", "moderator", "admin", "sponsor"];
@@ -44,6 +45,8 @@ export function PushBroadcastPanel() {
   const [mode, setMode] = useState<"now" | "later">("now");
   const [scheduledFor, setScheduledFor] = useState("");
   const [scheduled, setScheduled] = useState<any[]>([]);
+  const [totalRaw, setTotalRaw] = useState<number | null>(null);
+  const [pruning, setPruning] = useState(false);
 
   const filters = {
     role: role === "any" ? "any" : role,
@@ -54,11 +57,25 @@ export function PushBroadcastPanel() {
   const loadCount = () => {
     readCount({ data: filters }).then((r: any) => setCount(r?.count ?? 0)).catch(() => setCount(0));
   };
+  const loadTotal = async () => {
+    const { count: c } = await (supabase as any).from("push_subscriptions").select("id", { count: "exact", head: true });
+    setTotalRaw(typeof c === "number" ? c : null);
+  };
   const loadScheduled = () => {
     readScheduled().then((r: any) => setScheduled(r?.items ?? [])).catch(() => setScheduled([]));
   };
   useEffect(() => { loadCount(); }, [role, locale, lastActiveDays]);
-  useEffect(() => { loadScheduled(); }, []);
+  useEffect(() => { loadScheduled(); loadTotal(); }, []);
+
+  const pruneDead = async () => {
+    if (!window.confirm("Remove push subscriptions that are disabled, unseen for 60+ days, or have failed 10+ times? This tightens the subscriber count to reachable devices only.")) return;
+    setPruning(true);
+    const { data, error } = await (supabase as any).rpc("prune_dead_push_subscriptions");
+    setPruning(false);
+    if (error) return toast.error(error.message);
+    toast.success(`Removed ${data ?? 0} dead subscription${data === 1 ? "" : "s"}`);
+    loadCount(); loadTotal();
+  };
 
   const submit = async () => {
     if (!title.trim()) { toast.error("Add a title for the notification."); return; }
@@ -119,13 +136,23 @@ export function PushBroadcastPanel() {
         <div className="flex items-center gap-2">
           <Bell className="h-5 w-5 text-primary" />
           <div className="font-bold">Push to subscribers</div>
+          <Button size="sm" variant="ghost" className="ml-auto h-7 text-[11px] text-muted-foreground hover:text-destructive" disabled={pruning} onClick={pruneDead}>
+            <Trash2 className="h-3 w-3 mr-1" />{pruning ? "Pruning…" : "Prune dead"}
+          </Button>
         </div>
         <p className="text-[11px] text-muted-foreground">
           Send instantly or schedule for a future time. Delivered to mobile notification bars.
         </p>
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground pt-1">
-          <Users className="h-3.5 w-3.5 text-primary" />
-          <span className="font-semibold text-foreground tabular-nums">{count ?? "—"}</span> subscribed device{count === 1 ? "" : "s"}
+        <div className="flex items-center gap-3 text-xs text-muted-foreground pt-1 flex-wrap">
+          <div className="flex items-center gap-1.5">
+            <Users className="h-3.5 w-3.5 text-primary" />
+            <span className="font-semibold text-foreground tabular-nums">{count ?? "—"}</span> active (reachable)
+          </div>
+          {totalRaw != null && totalRaw !== (count ?? -1) && (
+            <div className="text-[11px] opacity-75">
+              <span className="tabular-nums">{totalRaw}</span> total rows in DB
+            </div>
+          )}
         </div>
       </Card>
 

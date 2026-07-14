@@ -61,6 +61,7 @@ import { ArcadeAdminPanel } from "@/components/admin/ArcadeAdminPanel";
 import { CasinoHistoryPanel } from "@/components/admin/CasinoHistoryPanel";
 import { TopBetsPanel } from "@/components/admin/TopBetsPanel";
 import { TournamentAdminPanel } from "@/components/admin/TournamentAdminPanel";
+import { BrandingAdminPanel } from "@/components/admin/BrandingAdminPanel";
 import { seedLegacyUsers } from "@/lib/seed-users.functions";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { loadStandings, type LbRow } from "@/lib/leaderboard";
@@ -246,6 +247,7 @@ export function AdminPage() {
             <TabsContent value="topbets" className="mt-4"><TopBetsPanel /></TabsContent>
             <TabsContent value="tournaments" className="mt-4"><TournamentAdminPanel /></TabsContent>
             <TabsContent value="attendance" className="mt-4"><AttendancePanel /></TabsContent>
+            <TabsContent value="branding" className="mt-4"><BrandingAdminPanel /></TabsContent>
           </Tabs>
         </div>
         <ActionConfirmDialog />
@@ -4118,6 +4120,7 @@ function BetTrackerPanel() {
   const [bets, setBets] = useState<any[]>([]);
   const [filter, setFilter] = useState<string>("all");
   const [q, setQ] = useState("");
+  const [selectedBets, setSelectedBets] = useState<Set<string>>(new Set());
 
   async function load() {
     let qb = supabase.from("bets")
@@ -4126,6 +4129,7 @@ function BetTrackerPanel() {
     if (filter !== "all") qb = qb.eq("status", filter as any);
     const { data } = await qb;
     setBets(data ?? []);
+    setSelectedBets(new Set());
   }
   useEffect(() => { load(); }, [filter]);
   useEffect(() => {
@@ -4186,6 +4190,23 @@ function BetTrackerPanel() {
     return b.tracking_id?.toLowerCase().includes(s) || b.booking_code?.toLowerCase().includes(s) || b.profiles?.email?.toLowerCase().includes(s) || b.profiles?.full_name?.toLowerCase().includes(s);
   });
 
+  const toggleBet = (id: string) => setSelectedBets((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
+  const toggleAllBets = () => setSelectedBets((s) => s.size === filtered.length ? new Set() : new Set(filtered.map((b) => b.id)));
+  async function bulkDelete() {
+    const ok = await confirm({ title: `Delete ${selectedBets.size} ticket${selectedBets.size === 1 ? "" : "s"}?`, description: "All selected tickets will be permanently removed. Optionally refund each stake to its user.", tone: "danger", confirmText: "Delete selected", checkboxLabel: "Refund stakes to users", inputLabel: "Admin note", inputPlaceholder: "Optional reason shown in logs…" });
+    if (!ok || typeof ok !== "object") return;
+    const ids = Array.from(selectedBets);
+    let failed = 0;
+    for (const id of ids) {
+      const { error } = await supabase.rpc("admin_delete_bet", { _bet_id: id, _refund: ok.checked, _reason: ok.value || undefined });
+      if (error) failed++;
+      else await logAudit("bet_delete_bulk", "bet", id, { refunded: !!ok.checked, reason: ok.value });
+    }
+    if (failed > 0) toast.error(`Deleted ${ids.length - failed} of ${ids.length}. ${failed} failed.`);
+    else toast.success(`Deleted ${ids.length} ticket${ids.length === 1 ? "" : "s"}`);
+    load();
+  }
+
   return (
     <div className="space-y-3">
       <Card className="glass p-3 flex flex-wrap items-center gap-2">
@@ -4201,11 +4222,25 @@ function BetTrackerPanel() {
           </SelectContent>
         </Select>
       </Card>
+      {filtered.length > 0 && (
+        <Card className="glass p-2 flex items-center gap-3 flex-wrap">
+          <label className="flex items-center gap-2 text-xs text-muted-foreground">
+            <input type="checkbox" checked={selectedBets.size === filtered.length && filtered.length > 0} onChange={toggleAllBets} />
+            Select all ({selectedBets.size}/{filtered.length})
+          </label>
+          {selectedBets.size > 0 && (
+            <Button size="sm" variant="destructive" onClick={bulkDelete}>
+              <Trash2 className="h-3 w-3 mr-1" />Delete selected ({selectedBets.size})
+            </Button>
+          )}
+        </Card>
+      )}
       <div className="space-y-2">
         {filtered.length === 0 && <p className="text-sm text-muted-foreground">No tickets match.</p>}
         {filtered.map((b) => (
           <Card key={b.id} className="glass p-3">
             <div className="flex items-start justify-between gap-3 flex-wrap">
+              <input type="checkbox" checked={selectedBets.has(b.id)} onChange={() => toggleBet(b.id)} className="mt-1 shrink-0" />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="font-mono text-xs text-primary font-bold">{b.tracking_id}</span>

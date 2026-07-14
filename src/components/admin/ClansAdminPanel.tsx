@@ -127,9 +127,11 @@ function TeamsTab() {
   const confirm = useConfirm();
   const [teams, setTeams] = useState<Team[]>([]);
   const [edit, setEdit] = useState<Partial<Team> | null>(null);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
   async function load() {
     const { data } = await supabase.from("teams").select("*").order("name");
     setTeams((data ?? []) as Team[]);
+    setSelected(new Set());
   }
   useEffect(() => { load(); }, []);
   async function save(t: Partial<Team>) {
@@ -149,14 +151,36 @@ function TeamsTab() {
     if (error) return toast.error(error.message);
     toast.success("Deleted"); load();
   }
+  const toggleOne = (id: string) => setSelected((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
+  const toggleAll = () => setSelected((s) => s.size === teams.length ? new Set() : new Set(teams.map((t) => t.id)));
+  async function bulkRemove() {
+    if (selected.size === 0) return;
+    if (!await confirm({ title: `Delete ${selected.size} team${selected.size === 1 ? "" : "s"}?`, description: "All selected teams / gangs will be permanently removed. Related matches keep their stored team info.", tone: "danger", confirmText: "Delete selected" })) return;
+    const ids = Array.from(selected);
+    const { error } = await supabase.from("teams").delete().in("id", ids);
+    if (error) return toast.error(error.message);
+    toast.success(`Deleted ${ids.length} team${ids.length === 1 ? "" : "s"}`); load();
+  }
   return (
     <div className="space-y-2">
-      <div className="flex justify-end">
-        <Button size="sm" onClick={() => setEdit({})}><Plus className="h-3 w-3 mr-1" />New Team</Button>
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <label className="flex items-center gap-2 text-xs text-muted-foreground">
+          <input type="checkbox" checked={teams.length > 0 && selected.size === teams.length} onChange={toggleAll} />
+          Select all ({selected.size}/{teams.length})
+        </label>
+        <div className="flex items-center gap-2">
+          {selected.size > 0 && (
+            <Button size="sm" variant="destructive" onClick={bulkRemove}>
+              <Trash2 className="h-3 w-3 mr-1" />Delete selected ({selected.size})
+            </Button>
+          )}
+          <Button size="sm" onClick={() => setEdit({})}><Plus className="h-3 w-3 mr-1" />New Team</Button>
+        </div>
       </div>
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-[60vh] overflow-y-auto pr-1">
         {teams.map((t) => (
           <div key={t.id} className="rounded-lg border border-primary/20 bg-card/70 p-3 flex items-center gap-2">
+            <input type="checkbox" checked={selected.has(t.id)} onChange={() => toggleOne(t.id)} className="shrink-0" />
             {t.logo_url
               ? <img src={t.logo_url} alt="" className="h-9 w-9 rounded object-cover border border-primary/30" />
               : <div className="h-9 w-9 rounded bg-primary/20 grid place-items-center text-xs font-bold text-primary">{t.name.charAt(0).toUpperCase()}</div>}

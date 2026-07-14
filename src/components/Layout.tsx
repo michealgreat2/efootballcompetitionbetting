@@ -15,6 +15,7 @@ import { ReactNode, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLocation } from "@tanstack/react-router";
 import lslPlatformBg from "@/assets/lsl-bg-nebula.png.asset.json";
+import { useBranding } from "@/lib/branding";
 
 // Site-wide background ticker so virtual rounds keep advancing even when
 // no one is on /virtual. Any authenticated client pings every 15s.
@@ -58,6 +59,7 @@ export const Layout = ({ children }: { children: ReactNode }) => {
   useVirtualHeartbeat();
   useForceReloadBroadcast();
   const [railOpen, setRailOpen] = useState(false);
+  const branding = useBranding();
   // Admin-configurable site-wide background + branding (fall back to bundled art).
   const [siteBg, setSiteBg] = useState<string | null>(null);
   const [bgFit, setBgFit] = useState<string>("cover");
@@ -111,9 +113,18 @@ export const Layout = ({ children }: { children: ReactNode }) => {
         )}
         <div className="container mx-auto px-4 flex h-16 items-center gap-3 lg:gap-4 relative">
           <Link to="/" className="flex items-center gap-2 group shrink-0">
-            <GangLogo size={38} className="transition-transform group-hover:scale-105 group-hover:rotate-3 duration-300" />
+            {branding.logoUrl ? (
+              <img src={branding.logoUrl} alt={branding.name} className="h-[38px] w-[38px] object-contain rounded transition-transform group-hover:scale-105 group-hover:rotate-3 duration-300" />
+            ) : (
+              <GangLogo size={38} className="transition-transform group-hover:scale-105 group-hover:rotate-3 duration-300" />
+            )}
             <div className="leading-tight">
-              {siteName ? (
+              {branding.name && branding.name !== "LSL" ? (
+                <>
+                  <div className="text-sm font-extrabold tracking-[0.18em] gradient-gold-text uppercase max-w-[160px] truncate">{branding.name}</div>
+                  {branding.tagline && <div className="text-[9px] text-muted-foreground tracking-[0.25em] uppercase max-w-[160px] truncate">{branding.tagline}</div>}
+                </>
+              ) : siteName ? (
                 <div className="text-sm font-extrabold tracking-[0.18em] gradient-gold-text uppercase max-w-[160px] truncate">{siteName}</div>
               ) : (
                 <>

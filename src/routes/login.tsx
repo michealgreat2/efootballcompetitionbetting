@@ -10,6 +10,26 @@ import { toast } from "sonner";
 import { Layout } from "@/components/Layout";
 import { ShieldAlert } from "lucide-react";
 import gangsterAsset from "@/assets/auth-gangster.jpg.asset.json";
+import { useBranding } from "@/lib/branding";
+
+function AuthBrand() {
+  const b = useBranding();
+  return (
+    <>
+      {b.logoAuthUrl ? (
+        <img src={b.logoAuthUrl} alt={b.name} className="h-10 w-10 rounded-full object-cover shadow-gold" />
+      ) : (
+        <div className="h-10 w-10 rounded-full bg-gradient-gold grid place-items-center shadow-gold">
+          <span className="font-black text-background">{(b.name || "L").charAt(0)}</span>
+        </div>
+      )}
+      <div className="leading-tight">
+        <div className="font-black tracking-wide uppercase">{b.tagline || b.name}</div>
+        <div className="text-[10px] uppercase tracking-[0.35em] text-primary/80">{b.name}</div>
+      </div>
+    </>
+  );
+}
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -65,13 +85,7 @@ function LoginPage() {
           <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-background" />
           <div className="relative z-10 h-full flex flex-col justify-between p-10">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-gradient-gold grid place-items-center shadow-gold">
-                <span className="font-black text-background">L</span>
-              </div>
-              <div className="leading-tight">
-                <div className="font-black tracking-wide">LOMITA SHOOTERS</div>
-                <div className="text-[10px] uppercase tracking-[0.35em] text-primary/80">League</div>
-              </div>
+              <AuthBrand />
             </div>
             <div className="max-w-sm">
               <h2 className="font-display text-4xl font-black leading-tight">

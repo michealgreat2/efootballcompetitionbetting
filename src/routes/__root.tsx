@@ -159,6 +159,38 @@ import { ConfirmProvider } from "@/components/ConfirmDialog";
 import { PopupAd } from "@/components/PopupAd";
 import { BetSlipFab } from "@/components/BetSlip";
 import { RouteProgress } from "@/components/RouteProgress";
+import { useBranding } from "@/lib/branding";
+import { useEffect } from "react";
+
+function BrandingSync() {
+  const b = useBranding();
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    if (b.name && b.tagline) {
+      const t = `${b.tagline} — ${b.name}`;
+      if (document.title !== t) document.title = t;
+    }
+    const setMeta = (sel: string, attr: string, val: string) => {
+      const el = document.head.querySelector(sel) as HTMLMetaElement | null;
+      if (el) el.setAttribute(attr, val);
+    };
+    if (b.description) {
+      setMeta('meta[name="description"]', "content", b.description);
+      setMeta('meta[property="og:description"]', "content", b.description);
+      setMeta('meta[name="twitter:description"]', "content", b.description);
+    }
+    if (b.tagline) {
+      setMeta('meta[property="og:title"]', "content", b.tagline);
+      setMeta('meta[name="twitter:title"]', "content", b.tagline);
+      setMeta('meta[property="og:site_name"]', "content", b.tagline);
+    }
+    if (b.ogImageUrl) {
+      setMeta('meta[property="og:image"]', "content", b.ogImageUrl);
+      setMeta('meta[name="twitter:image"]', "content", b.ogImageUrl);
+    }
+  }, [b.name, b.tagline, b.description, b.ogImageUrl]);
+  return null;
+}
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
@@ -172,6 +204,7 @@ function RootComponent() {
       <AuthProvider>
         <BetSlipProvider>
           <ConfirmProvider>
+            <BrandingSync />
             <MaintenanceGate>
               <Outlet />
             </MaintenanceGate>
