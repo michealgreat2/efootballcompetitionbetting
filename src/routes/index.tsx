@@ -174,29 +174,11 @@ function Index() {
               <div className="mt-4">
                 <Carousel opts={{ loop: featuredFallback.length > 1 }} plugins={featuredFallback.length > 1 ? [Autoplay({ delay: 5000, stopOnInteraction: false })] : []}>
                   <CarouselContent>
-                    {featuredFallback.map((m) => {
-                      const bg = futures.length === 0 ? m.featured_image_url : null;
-                      return (
-                        <CarouselItem key={m.id}>
-                          {bg ? (
-                            <div className="relative overflow-hidden rounded-3xl border border-primary/25 shadow-gold">
-                              <img
-                                src={bg}
-                                alt=""
-                                className="absolute inset-0 h-full w-full"
-                                style={{ objectFit: (m.featured_image_fit as any) || "cover", objectPosition: m.featured_image_position || "center" }}
-                              />
-                              {/* Keep the uploaded image fully visible — only a soft bottom
-                                  scrim behind the card content for legibility. */}
-                              <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-background/80 via-background/25 to-transparent" />
-                              <div className="relative p-4 md:p-6"><MatchCardLive match={m} /></div>
-                            </div>
-                          ) : (
-                            <MatchCardLive match={m} />
-                          )}
-                        </CarouselItem>
-                      );
-                    })}
+                    {featuredFallback.map((m) => (
+                      <CarouselItem key={m.id}>
+                        <FeaturedGoldenMatches matches={[m]} bgImage={m.featured_image_url} bgFit={m.featured_image_fit} bgPos={m.featured_image_position} />
+                      </CarouselItem>
+                    ))}
                   </CarouselContent>
                   {featuredFallback.length > 1 && (<><CarouselPrevious /><CarouselNext /></>)}
                 </Carousel>
@@ -352,12 +334,24 @@ function FutureEmblem({ label, url }: { label: string; url?: string | null }) {
 
 // Featured matches rendered as SportyBet-style golden rows inside the
 // Seasonal Tournament banner, under the "Go to Tournament" header.
-function FeaturedGoldenMatches({ matches }: { matches: MatchRow[] }) {
+function FeaturedGoldenMatches({ matches, bgImage, bgFit, bgPos }: { matches: MatchRow[]; bgImage?: string | null; bgFit?: string | null; bgPos?: string | null }) {
   const { selections, add, remove, setOpen } = useBetSlip();
   if (matches.length === 0) return null;
   return (
-    <div className="relative mt-5 space-y-2.5">
-      <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] font-black text-amber-100">
+    <div className="seasonal-golden relative overflow-hidden rounded-3xl px-4 py-5 md:px-6 md:py-6 space-y-3">
+      {bgImage && (
+        <>
+          <img
+            src={bgImage}
+            alt=""
+            aria-hidden
+            className="absolute inset-0 h-full w-full"
+            style={{ objectFit: (bgFit as any) || "cover", objectPosition: bgPos || "center" }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/25" />
+        </>
+      )}
+      <div className="relative flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] font-black text-amber-100">
         <Flame className="h-3.5 w-3.5" /> Featured Matches
       </div>
       {matches.map((m) => {

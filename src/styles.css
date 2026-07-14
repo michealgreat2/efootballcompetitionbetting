@@ -624,14 +624,14 @@
   content: "";
   position: absolute; inset: 0;
   pointer-events: none;
-  background: #00180d;
+  background: oklch(0.14 0.02 260 / 0.55);
   z-index: -2;
 }
 .page-shell--wallet::before {
-  background: #00180d;
+  background: oklch(0.14 0.02 260 / 0.55);
 }
 .page-shell--social::before {
-  background: #00180d;
+  background: oklch(0.14 0.02 260 / 0.55);
 }
 .page-shell-aurora {
   position: absolute; inset: -20%;
