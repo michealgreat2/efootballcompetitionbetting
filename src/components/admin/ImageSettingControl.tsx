@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Upload, Link2, Trash2, Loader2, Crop } from "lucide-react";
+import { Upload, Link2, Trash2, Loader2 } from "lucide-react";
 import { validateAndResize, type ImageKind } from "@/lib/image-validation";
 import { ImageCropDialog } from "@/components/admin/ImageCropDialog";
 
