@@ -130,11 +130,11 @@ function Page() {
 
         <Tabs defaultValue="gangs">
           <TabsList className="bg-black/25 backdrop-blur-[2px] border border-amber-400/40">
-            <TabsTrigger value="gangs">Top Team / Scorer</TabsTrigger>
+            <TabsTrigger value="teams">E-FOOTBALL</TabsTrigger>
             <TabsTrigger value="shooters">Top Shooters</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="gangs" className="mt-4">
+          <TabsContent value="teams" className="mt-4">
             <Board
               rows={gangs}
               firstCol="Team / Sccorer"
