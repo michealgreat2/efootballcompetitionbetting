@@ -137,7 +137,7 @@ export async function loadStandings(): Promise<Standings> {
     target.set(o.name, {
       name: o.name,
       top_player: o.top_player ?? existing?.top_player ?? undefined,
-      gang_faction: o.top_player ?? existing?.gang_faction,
+      gang_faction: o.gang_faction ?? o.team_name ?? existing?.gang_faction ?? "—",
       TS: o.total_score ?? o.points ?? 0,
       W: o.wins, L: o.losses, D: o.draws, P: o.played, PTS: o.points,
       manual_rank: o.manual_rank,
